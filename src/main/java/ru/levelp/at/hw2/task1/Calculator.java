@@ -1,7 +1,6 @@
 package ru.levelp.at.hw2.task1;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.List;
 import java.util.Scanner;
@@ -15,7 +14,8 @@ public class Calculator {
 
     public void start() {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите число: ");
+        System.out.println("Операция над двумя числами");
+        System.out.print("Введите первое число: ");
         String input = scanner.next();
         if (!input.matches("[-]?[0-9]+(\\.[0-9]+)?")) {
             System.out.println("Ошибка ввода: введено не число");
@@ -23,6 +23,7 @@ public class Calculator {
         }
         BigDecimal arg1 = new BigDecimal(input);
         String operation;
+        List<String> validOperations = List.of("1", "2", "3", "4");
         do {
             System.out.println("Введите операцию:");
             System.out.println("    1. Прибавить");
@@ -31,8 +32,8 @@ public class Calculator {
             System.out.println("    4. Разделить");
             System.out.print("> ");
             operation = scanner.next();
-        } while (!List.of("1", "2", "3", "4").contains(operation));
-        System.out.print("Введите число: ");
+        } while (!validOperations.contains(operation));
+        System.out.print("Введите второе число: ");
         input = scanner.next();
         if (!input.matches("[-]?[0-9]+(\\.[0-9]+)?")) {
             System.out.println("Ошибка ввода: введено не число");
