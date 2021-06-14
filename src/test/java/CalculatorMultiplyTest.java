@@ -1,4 +1,6 @@
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertThrows;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -21,22 +23,22 @@ public class CalculatorMultiplyTest extends CalculatorBaseTest {
 
     @Test(dataProvider = "getLongArgs")
     public void testLongMultiplyPositive(long a, long b, long expectedResult) {
-        Assert.assertEquals(calculator.mult(a, b), expectedResult);
+        assertEquals(calculator.mult(a, b), expectedResult);
     }
 
     @Test(dataProvider = "getDoubleArgs")
     public void testDoubleMultiplyPositive(double a, double b, double expectedResult) {
-        Assert.assertEquals(calculator.mult(a, b), expectedResult, doubleComparisonDelta);
+        assertEquals(calculator.mult(a, b), expectedResult, doubleComparisonDelta);
     }
 
     @Test
     public void testLongMultiplyOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.mult(9223372036854775807L, 9223372036854775807L));
+        assertThrows(Exception.class, () -> calculator.mult(Long.MAX_VALUE, Long.MAX_VALUE));
     }
 
     @Test
     public void testDoubleMultiplyOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.mult(1.7e+308, 1.7e+308));
+        assertThrows(Exception.class, () -> calculator.mult(Double.MAX_VALUE, Double.MAX_VALUE));
     }
 
 }

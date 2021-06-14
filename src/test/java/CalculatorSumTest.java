@@ -1,5 +1,6 @@
-import org.testng.Assert;
-import org.testng.Assert.ThrowingRunnable;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertThrows;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -21,22 +22,22 @@ public class CalculatorSumTest extends CalculatorBaseTest {
 
     @Test(dataProvider = "getLongArgs")
     public void testLongSumPositive(long a, long b, long expectedResult) {
-        Assert.assertEquals(calculator.sum(a, b), expectedResult);
+        assertEquals(calculator.sum(a, b), expectedResult);
     }
 
     @Test(dataProvider = "getDoubleArgs")
     public void testDoubleSumPositive(double a, double b, double expectedResult) {
-        Assert.assertEquals(calculator.sum(a, b), expectedResult, doubleComparisonDelta);
+        assertEquals(calculator.sum(a, b), expectedResult, doubleComparisonDelta);
     }
 
     @Test
     public void testLongSumOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.sum(9223372036854775807L, 9223372036854775807L));
+        assertThrows(Exception.class, () -> calculator.sum(Long.MAX_VALUE, Long.MAX_VALUE));
     }
 
     @Test
     public void testDoubleSumOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.sum(1.7e+308, 1.7e+308));
+        assertThrows(Exception.class, () -> calculator.sum(Double.MAX_VALUE, Double.MAX_VALUE));
     }
 
 

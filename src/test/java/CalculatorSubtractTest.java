@@ -1,4 +1,6 @@
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertThrows;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -20,22 +22,22 @@ public class CalculatorSubtractTest extends CalculatorBaseTest {
 
     @Test(dataProvider = "getLongArgs")
     public void testLongSubtractPositive(long a, long b, long expectedResult) {
-        Assert.assertEquals(calculator.sub(a, b), expectedResult);
+        assertEquals(calculator.sub(a, b), expectedResult);
     }
 
     @Test(dataProvider = "getDoubleArgs")
     public void testDoubleSubtractPositive(double a, double b, double expectedResult) {
-        Assert.assertEquals(calculator.sub(a, b), expectedResult, doubleComparisonDelta);
+        assertEquals(calculator.sub(a, b), expectedResult, doubleComparisonDelta);
     }
 
     @Test
     public void testLongSubtractOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.sub(9223372036854775807L, -9223372036854775807L));
+        assertThrows(Exception.class, () -> calculator.sub(Long.MAX_VALUE, Long.MIN_VALUE));
     }
 
     @Test
     public void testDoubleSubtractOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.sub(1.7e+308, -1.7e+308));
+        assertThrows(Exception.class, () -> calculator.sub(Double.MAX_VALUE, -Double.MAX_VALUE));
     }
 
 }

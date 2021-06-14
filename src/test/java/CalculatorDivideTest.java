@@ -1,4 +1,6 @@
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertThrows;
+
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -21,27 +23,27 @@ public class CalculatorDivideTest extends CalculatorBaseTest {
 
     @Test(dataProvider = "getLongArgs")
     public void testLongDividePositive(long a, long b, long expectedResult) {
-        Assert.assertEquals(calculator.div(a, b), expectedResult);
+        assertEquals(calculator.div(a, b), expectedResult);
     }
 
     @Test(dataProvider = "getDoubleArgs")
     public void testDoubleDividePositive(double a, double b, double expectedResult) {
-        Assert.assertEquals(calculator.div(a, b), expectedResult, doubleComparisonDelta);
+        assertEquals(calculator.div(a, b), expectedResult, doubleComparisonDelta);
     }
 
     @Test
     public void testLongDivideByZero() {
-        Assert.assertThrows(NumberFormatException.class, () -> calculator.div(2, 0));
+        assertThrows(NumberFormatException.class, () -> calculator.div(2, 0));
     }
 
     @Test
     public void testDoubleDivideByZero() {
-        Assert.assertThrows(NumberFormatException.class, () -> calculator.div(2.5, 0.0));
+        assertThrows(NumberFormatException.class, () -> calculator.div(2.5, 0.0));
     }
 
     @Test
     public void testDoubleDivideOverflow() {
-        Assert.assertThrows(Exception.class, () -> calculator.div(1.7e+308, 4.9e-324));
+        assertThrows(Exception.class, () -> calculator.div(Double.MAX_VALUE, Double.MIN_VALUE));
     }
 
 }
