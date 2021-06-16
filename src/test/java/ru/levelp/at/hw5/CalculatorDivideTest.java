@@ -1,3 +1,5 @@
+package ru.levelp.at.hw5;
+
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertThrows;
 

@@ -1,3 +1,5 @@
+package ru.levelp.at.hw5;
+
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 

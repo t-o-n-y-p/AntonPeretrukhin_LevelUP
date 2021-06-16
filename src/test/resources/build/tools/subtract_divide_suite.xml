@@ -4,13 +4,13 @@
 
   <test name="Calculator subtract test">
     <classes>
-      <class name="CalculatorSubtractTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorSubtractTest"/>
     </classes>
   </test>
 
   <test name="Calculator divide test">
     <classes>
-      <class name="CalculatorDivideTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorDivideTest"/>
     </classes>
   </test>
 
