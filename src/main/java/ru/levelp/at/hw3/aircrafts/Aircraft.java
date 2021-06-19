@@ -58,7 +58,7 @@ public abstract class Aircraft {
             throw new AircraftLoadException("No room for the load with the given weight.");
         }
 
-        load += capacity;
+        load += weight;
     }
 
     public void unload(Double weight) {
@@ -69,7 +69,7 @@ public abstract class Aircraft {
             throw new AircraftLoadException("Current load is less than the given weight.");
         }
 
-        load -= capacity;
+        load -= weight;
     }
 
 
