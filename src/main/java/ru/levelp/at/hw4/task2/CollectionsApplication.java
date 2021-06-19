@@ -5,12 +5,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CollectionsApplication {
 
-    private static final List<Integer> dividers = List.of(2, 3, 5, 7);
+    private static final SortedSet<Integer> dividers = new TreeSet<>(Set.of(2, 3, 5, 7));
 
     public static void main(String[] args) {
         CollectionsApplication application = new CollectionsApplication();
