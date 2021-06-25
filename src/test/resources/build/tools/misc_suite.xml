@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Misc Calculator Suite">
+
+  <test name="Calculator misc test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorPowTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorSqrtTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorPositiveNegativeTest"/>
+    </classes>
+  </test>
+
+</suite>

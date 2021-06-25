@@ -1,0 +1,46 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Complete Calculator Suite">
+
+  <test name="Calculator sum test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorSumTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator multiply test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorMultiplyTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator subtract test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorSubtractTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator divide test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorDivideTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator trigonometric test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorSinTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorCosTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorTgTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorCtgTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator misc test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorPowTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorSqrtTest"/>
+      <class name="ru.levelp.at.hw5.CalculatorPositiveNegativeTest"/>
+    </classes>
+  </test>
+
+</suite>

@@ -1,0 +1,17 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Sum and multiply Calculator Suite">
+
+  <test name="Calculator sum test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorSumTest"/>
+    </classes>
+  </test>
+
+  <test name="Calculator multiply test">
+    <classes>
+      <class name="ru.levelp.at.hw5.CalculatorMultiplyTest"/>
+    </classes>
+  </test>
+
+</suite>
