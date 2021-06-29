@@ -25,11 +25,7 @@ public class ChessGameTest extends BaseTest {
     @Test
     public void testChessGame() {
         User currentUser = USERS.get(0);
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
 
         List<String> opponentNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//th"))
             .stream()
@@ -116,15 +112,8 @@ public class ChessGameTest extends BaseTest {
                 + "♟;♟;♟;;♟;♟;♟;♟;♜;♞;♝;♚;♛;♝;;♜"
         );
 
-        // hack to avoid test fails due to login button not clicked properly
-        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
-        driver.navigate().to("http://localhost:8080");
         currentUser = USERS.get(0);
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
 
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
         assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(3);
@@ -224,14 +213,7 @@ public class ChessGameTest extends BaseTest {
         driver.findElement(By.linkText("Logout")).click();
 
         currentUser = USERS.get(1);
-        // hack to avoid test fails due to login button not clicked properly
-        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
-        driver.navigate().to("http://localhost:8080");
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
         resignAlert = driver.findElement(By.className("alert-info"));
         assertThat(resignAlert).hasFieldOrPropertyWithValue(
@@ -243,14 +225,7 @@ public class ChessGameTest extends BaseTest {
     }
 
     private void makeMove(User currentUser, String from, String to, String chessBoardBefore, String chessBoardAfter) {
-        // hack to avoid test fails due to login button not clicked properly
-        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
-        driver.navigate().to("http://localhost:8080");
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
 
         assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(3);
@@ -273,14 +248,5 @@ public class ChessGameTest extends BaseTest {
 
         driver.findElement(By.linkText("Main page")).click();
         driver.findElement(By.linkText("Logout")).click();
-    }
-
-    private void checkChessBoard(String expectedBoard) {
-        List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
-        String chessBoard = IntStream.range(0, 72)
-                                     .filter(i -> i % 9 != 0)
-                                     .mapToObj(i -> chessBoardSquares.get(i).getText())
-                                     .collect(Collectors.joining(";"));
-        assertThat(chessBoard).isEqualTo(expectedBoard);
     }
 }

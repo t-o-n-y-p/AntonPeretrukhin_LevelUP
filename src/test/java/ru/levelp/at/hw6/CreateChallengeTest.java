@@ -17,11 +17,7 @@ public class CreateChallengeTest extends BaseTest {
     @Test
     public void testCreateChallenge() {
         User currentUser = USERS.get(1);
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
 
         driver.findElement(By.linkText("Create challenge")).click();
         Set<String> actualUsernames = driver.findElements(By.tagName("th"))
@@ -57,14 +53,7 @@ public class CreateChallengeTest extends BaseTest {
 
         driver.findElement(By.linkText("Logout")).click();
         currentUser = USERS.get(0);
-        // hack to avoid test fails due to login button not clicked properly
-        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
-        driver.navigate().to("http://localhost:8080");
-        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+        login(currentUser);
         Set<String> challengerNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//th"))
             .stream()
             .map(th -> th.getText().split("\\s")[1])

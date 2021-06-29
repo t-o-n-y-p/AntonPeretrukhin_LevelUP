@@ -1,10 +1,14 @@
 package ru.levelp.at.hw6;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -65,6 +69,26 @@ public abstract class BaseTest {
     public void tearDown() {
         driver.quit();
         PostgresqlConnectionUtil.clearUserActivity();
+    }
+
+    protected void checkChessBoard(String expectedBoard) {
+        List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
+        String chessBoard = IntStream.range(0, 72)
+                                     .filter(i -> i % 9 != 0)
+                                     .mapToObj(i -> chessBoardSquares.get(i).getText())
+                                     .collect(Collectors.joining(";"));
+        assertThat(chessBoard).isEqualTo(expectedBoard);
+    }
+
+    protected void login(User currentUser) {
+        // hack to avoid test fails due to login button not clicked properly
+        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
+        driver.navigate().to("http://localhost:8080");
+        driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
+        driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
+        driver.findElement(By.xpath("//button[text()='Log in']")).click();
+        assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
+            .startsWith(currentUser.getLogin());
     }
 
 }
