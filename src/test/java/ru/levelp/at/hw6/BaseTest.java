@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -61,6 +62,7 @@ public abstract class BaseTest {
     @AfterMethod
     public void tearDown() {
         driver.quit();
+        PostgresqlConnectionUtil.clearUserActivity();
     }
 
 }

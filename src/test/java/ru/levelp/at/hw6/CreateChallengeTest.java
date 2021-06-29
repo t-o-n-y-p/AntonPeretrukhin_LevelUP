@@ -57,10 +57,11 @@ public class CreateChallengeTest extends BaseTest {
 
         driver.findElement(By.linkText("Logout")).click();
         currentUser = USERS.get(0);
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']")));
+        // hack to avoid test fails due to login button not clicked properly
+        // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
+        driver.navigate().to("http://localhost:8080");
         driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
         driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']")));
         driver.findElement(By.xpath("//button[text()='Log in']")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("nav > a")));
         assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
@@ -72,12 +73,5 @@ public class CreateChallengeTest extends BaseTest {
         assertThat(challengerNames).containsOnly(USERS.get(1).getLogin());
 
         driver.findElement(By.linkText("Logout")).click();
-    }
-
-    @Override
-    @AfterMethod
-    public void tearDown() {
-        super.tearDown();
-        PostgresqlConnectionUtil.clearChallenges();
     }
 }
