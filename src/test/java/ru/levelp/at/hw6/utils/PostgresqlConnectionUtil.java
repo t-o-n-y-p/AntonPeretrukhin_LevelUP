@@ -1,7 +1,6 @@
 package ru.levelp.at.hw6.utils;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,6 +46,13 @@ public class PostgresqlConnectionUtil {
             statement.execute("DELETE FROM games");
             statement.execute("DELETE FROM challenges");
             statement.execute("DELETE FROM users");
+        }
+    }
+
+    @SneakyThrows
+    public static void clearChallenges() {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("DELETE FROM challenges");
         }
     }
 

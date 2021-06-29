@@ -4,14 +4,12 @@ import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import ru.levelp.at.hw6.utils.PostgresqlConnectionUtil;
@@ -31,6 +29,7 @@ public abstract class BaseTest {
         driver = new ChromeDriver();
         driver.manage().window().maximize();
 
+        PostgresqlConnectionUtil.clearData();
         driver.navigate().to("http://localhost:8080");
         for (int i = 0; i < 12; i++) {
             User currentUser = new User(
@@ -62,11 +61,6 @@ public abstract class BaseTest {
     @AfterMethod
     public void tearDown() {
         driver.quit();
-    }
-
-    @AfterSuite(alwaysRun = true)
-    public void afterSuite() {
-        PostgresqlConnectionUtil.clearData();
     }
 
 }

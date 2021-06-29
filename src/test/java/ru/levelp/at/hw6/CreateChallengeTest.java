@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
+import ru.levelp.at.hw6.utils.PostgresqlConnectionUtil;
 import ru.levelp.at.hw6.utils.User;
 
 public class CreateChallengeTest extends BaseTest {
@@ -72,4 +74,10 @@ public class CreateChallengeTest extends BaseTest {
         driver.findElement(By.linkText("Logout")).click();
     }
 
+    @Override
+    @AfterMethod
+    public void tearDown() {
+        super.tearDown();
+        PostgresqlConnectionUtil.clearChallenges();
+    }
 }
