@@ -4,12 +4,13 @@ import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -21,7 +22,8 @@ public abstract class BaseTest {
     private static final Faker FAKER = new Faker();
 
     protected WebDriver driver;
-    protected final List<User> users = new ArrayList<>();
+    protected WebDriverWait wait;
+    protected static final List<User> USERS = new ArrayList<>();
 
     @BeforeSuite
     public void beforeSuite() {
@@ -41,21 +43,29 @@ public abstract class BaseTest {
             driver.findElement(By.id("repeat_password")).sendKeys(currentUser.getPassword());
             driver.findElement(By.id("signup-button")).click();
             driver.findElement(By.linkText("Logout")).click();
-            users.add(currentUser);
+            USERS.add(currentUser);
         }
+        driver.quit();
     }
 
     @BeforeMethod
     public void setUp() {
+        driver = new ChromeDriver();
+        wait = new WebDriverWait(driver, 10);
+        driver.manage().window().maximize();
         driver.navigate().to("http://localhost:8080");
         driver.findElements(By.linkText("Logout")).stream()
               .findFirst()
               .ifPresent(WebElement::click);
     }
 
-    @AfterSuite(alwaysRun = true)
+    @AfterMethod
     public void tearDown() {
         driver.quit();
+    }
+
+    @AfterSuite(alwaysRun = true)
+    public void afterSuite() {
         PostgresqlConnectionUtil.clearData();
     }
 

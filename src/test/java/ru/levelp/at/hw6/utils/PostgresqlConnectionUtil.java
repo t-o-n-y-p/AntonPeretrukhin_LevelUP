@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -58,15 +59,26 @@ public class PostgresqlConnectionUtil {
                 ids.add(resultSet.getInt("id"));
             }
         }
-        try (PreparedStatement statement
-                 = connection.prepareStatement("INSERT INTO challenges VALUES (?, ?, ?, ?, ?)")) {
+        try (PreparedStatement statement = connection.prepareStatement(
+            "INSERT INTO challenges (id, target_color, timestamp, uuid, from_id, to_id) VALUES (?, ?, ?, ?, ?, ?)"
+        )) {
             for (int i = 2; i < ids.size(); i++) {
-                statement.setString(1, i % 2 == 0 ? "white" : "black");
-                statement.setDate(2, new Date(Instant.now().toEpochMilli()));
-                statement.setString(3, UUID.randomUUID().toString());
-                statement.setInt(4, ids.get(i));
-                statement.setInt(5, ids.get(0));
-                statement.execute();
+                int id;
+                try (PreparedStatement idStatement
+                         = connection.prepareStatement("SELECT nextval('hibernate_sequence') as num")) {
+                    ResultSet resultSet = idStatement.executeQuery();
+                    resultSet.next();
+                    id = resultSet.getInt("num");
+                }
+                statement.setInt(1, id);
+                statement.setString(2, i % 2 == 0 ? "white" : "black");
+                statement.setTimestamp(3,
+                    new Timestamp(Instant.now().atZone(ZoneId.of("GMT")).toInstant().toEpochMilli())
+                );
+                statement.setObject(4, UUID.randomUUID());
+                statement.setInt(5, ids.get(i));
+                statement.setInt(6, ids.get(0));
+                statement.executeUpdate();
                 TimeUnit.MILLISECONDS.sleep(5);
             }
         }

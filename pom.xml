@@ -94,6 +94,12 @@
                 <test-suite.name>trigonometric_suite.xml</test-suite.name>
             </properties>
         </profile>
+        <profile>
+            <id>hw6</id>
+            <properties>
+                <test-suite.name>hw6.xml</test-suite.name>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
