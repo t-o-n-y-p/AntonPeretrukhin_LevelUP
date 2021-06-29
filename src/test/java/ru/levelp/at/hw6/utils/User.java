@@ -6,9 +6,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
+    @EqualsAndHashCode.Include
     private final String login;
     private final String password;
 

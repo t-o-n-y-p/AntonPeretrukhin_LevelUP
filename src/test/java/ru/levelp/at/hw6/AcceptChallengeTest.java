@@ -26,7 +26,7 @@ public class AcceptChallengeTest extends BaseTest {
         driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
         driver.findElement(By.xpath("//button[text()='Log in']")).click();
         assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .isEqualTo(String.join(" ", currentUser.getLogin(), "(1200.0)"));
+            .startsWith(currentUser.getLogin());
 
         List<String> challengerNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//th"))
             .stream()

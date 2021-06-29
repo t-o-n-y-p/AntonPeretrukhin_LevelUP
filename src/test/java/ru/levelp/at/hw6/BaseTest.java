@@ -32,18 +32,20 @@ public abstract class BaseTest {
 
         PostgresqlConnectionUtil.clearData();
         driver.navigate().to("http://localhost:8080");
-        for (int i = 0; i < 12; i++) {
+        while (USERS.size() < 12) {
             User currentUser = new User(
                 FAKER.internet().password(4, 9),
                 FAKER.internet().password()
             );
-            driver.findElement(By.id("no_account")).click();
-            driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
-            driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
-            driver.findElement(By.id("repeat_password")).sendKeys(currentUser.getPassword());
-            driver.findElement(By.id("signup-button")).click();
-            driver.findElement(By.linkText("Logout")).click();
-            USERS.add(currentUser);
+            if (!USERS.contains(currentUser)) {
+                driver.findElement(By.id("no_account")).click();
+                driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
+                driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
+                driver.findElement(By.id("repeat_password")).sendKeys(currentUser.getPassword());
+                driver.findElement(By.id("signup-button")).click();
+                driver.findElement(By.linkText("Logout")).click();
+                USERS.add(currentUser);
+            }
         }
         driver.quit();
     }

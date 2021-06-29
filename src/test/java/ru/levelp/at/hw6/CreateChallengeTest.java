@@ -21,7 +21,7 @@ public class CreateChallengeTest extends BaseTest {
         driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
         driver.findElement(By.xpath("//button[text()='Log in']")).click();
         assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .isEqualTo(String.join(" ", currentUser.getLogin(), "(1200.0)"));
+            .startsWith(currentUser.getLogin());
 
         driver.findElement(By.linkText("Create challenge")).click();
         Set<String> actualUsernames = driver.findElements(By.tagName("th"))
@@ -63,9 +63,8 @@ public class CreateChallengeTest extends BaseTest {
         driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
         driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
         driver.findElement(By.xpath("//button[text()='Log in']")).click();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("nav > a")));
         assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .isEqualTo(String.join(" ", currentUser.getLogin(), "(1200.0)"));
+            .startsWith(currentUser.getLogin());
         Set<String> challengerNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//th"))
             .stream()
             .map(th -> th.getText().split("\\s")[1])
