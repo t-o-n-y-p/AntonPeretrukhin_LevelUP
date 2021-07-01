@@ -83,12 +83,12 @@ public abstract class BaseTest {
     protected void login(User currentUser) {
         // hack to avoid test fails due to login button not clicked properly
         // wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[text()='Log in']"))) doesn't help
-        driver.navigate().to("http://localhost:8080");
+        driver.navigate().refresh();
         driver.findElement(By.id("login")).sendKeys(currentUser.getLogin());
         driver.findElement(By.id("password")).sendKeys(currentUser.getPassword());
         driver.findElement(By.xpath("//button[text()='Log in']")).click();
         assertThat(driver.findElement(By.cssSelector("nav > a")).getText())
-            .startsWith(currentUser.getLogin());
+            .startsWith(currentUser.getLogin() + " (");
     }
 
 }
