@@ -6,7 +6,6 @@ import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.openqa.selenium.By;
@@ -74,9 +73,9 @@ public abstract class BaseTest {
     protected void checkChessBoard(String expectedBoard) {
         List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         String chessBoard = IntStream.range(0, 72)
-                                     .filter(i -> i % 9 != 0)
-                                     .mapToObj(i -> chessBoardSquares.get(i).getText())
-                                     .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> chessBoardSquares.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(expectedBoard);
     }
 
