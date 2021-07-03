@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import ru.levelp.at.hw6.utils.PostgresqlConnectionUtil;
 import ru.levelp.at.hw7.pages.ChallengesListPage;
 import ru.levelp.at.hw7.pages.GamePage;
 import ru.levelp.at.hw7.pages.LoginPage;
 import ru.levelp.at.hw7.pages.MainPage;
+import ru.levelp.at.hw7.utils.PostgresqlConnectionUtil;
 import ru.levelp.at.hw7.utils.User;
 
 public class AcceptChallengeTest extends BaseTest {
