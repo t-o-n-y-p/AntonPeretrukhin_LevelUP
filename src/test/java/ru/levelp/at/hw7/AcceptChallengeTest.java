@@ -2,9 +2,12 @@ package ru.levelp.at.hw7;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import ru.levelp.at.hw6.utils.PostgresqlConnectionUtil;
 import ru.levelp.at.hw7.pages.ChallengesListPage;
 import ru.levelp.at.hw7.pages.GamePage;
 import ru.levelp.at.hw7.pages.LoginPage;
@@ -12,6 +15,11 @@ import ru.levelp.at.hw7.pages.MainPage;
 import ru.levelp.at.hw7.utils.User;
 
 public class AcceptChallengeTest extends BaseTest {
+
+    @BeforeTest
+    public void beforeTest() {
+        PostgresqlConnectionUtil.createTestChallenges();
+    }
 
     @Test
     public void testAcceptChallenge() {
@@ -27,7 +35,7 @@ public class AcceptChallengeTest extends BaseTest {
                      .toArray(String[]::new)
         );
         ChallengesListPage challengesListPage = mainPage.clickViewAllIncomingChallenges();
-        Set<String> challengerNames = challengesListPage.getChallengerNames();
+        List<String> challengerNames = challengesListPage.getChallengerNames();
         assertThat(challengerNames).hasSize(8);
 
         challengesListPage = challengesListPage.openNextPage();

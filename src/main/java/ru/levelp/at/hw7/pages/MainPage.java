@@ -52,16 +52,16 @@ public class MainPage extends AbstractPage {
         return successAlert.getText();
     }
 
-    public Set<String> getChallengerNames() {
+    public List<String> getChallengerNames() {
         return challengers.stream()
             .map(th -> th.getText().split("\\s")[1])
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
-    public Set<String> getOpponentNames() {
+    public List<String> getOpponentNames() {
         return opponents.stream()
             .map(th -> th.getText().split("\\s")[1])
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     public GamePage openGame(int index) {
