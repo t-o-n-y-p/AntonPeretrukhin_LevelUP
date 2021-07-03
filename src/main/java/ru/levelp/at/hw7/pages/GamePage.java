@@ -10,6 +10,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import ru.levelp.at.hw7.pages.utils.AttributeNotEqualToCondition;
@@ -103,7 +104,7 @@ public class GamePage extends AbstractPage {
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "disabled", "true"));
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        return this;
     }
 
     public GamePage clickPreviousMoveOnSecondMove() {
@@ -113,18 +114,18 @@ public class GamePage extends AbstractPage {
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
         wait.until(ExpectedConditions.attributeToBe(previousMoveButton, "disabled", "true"));
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        return this;
     }
 
     public GamePage clickPreviousMove() {
         String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         previousMoveButton.click();
-        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        gamePageNavigationWait(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        return this;
     }
 
     public GamePage clickNextMoveOnFirstMove() {
@@ -134,7 +135,7 @@ public class GamePage extends AbstractPage {
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "disabled", "true"));
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        return this;
     }
 
     public GamePage clickNextMoveOnSecondToLastMove() {
@@ -144,18 +145,18 @@ public class GamePage extends AbstractPage {
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(ExpectedConditions.attributeToBe(nextMoveButton, "disabled", "true"));
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        return this;
     }
 
     public GamePage clickNextMove() {
         String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         nextMoveButton.click();
-        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        return new GamePage(driver);
+        gamePageNavigationWait(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        return this;
     }
 
     public GamePage clickResign() {
@@ -169,5 +170,11 @@ public class GamePage extends AbstractPage {
     public GamePage confirmResignation() {
         confirmResignationButton.click();
         return new GamePage(driver);
+    }
+
+    private void gamePageNavigationWait(ExpectedCondition<Boolean> expectedCondition) {
+        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+        wait.until(expectedCondition);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 }
