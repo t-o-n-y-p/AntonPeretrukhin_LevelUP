@@ -106,6 +106,12 @@
                 <test-suite.name>hw7.xml</test-suite.name>
             </properties>
         </profile>
+        <profile>
+            <id>hw8</id>
+            <properties>
+                <test-suite.name>hw8.xml</test-suite.name>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
