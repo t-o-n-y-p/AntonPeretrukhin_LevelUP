@@ -17,7 +17,9 @@ public class AcceptChallengeTest extends BaseTest {
     public void testAcceptChallenge() {
         User currentUser = USERS.get(0);
         MainPage mainPage = new LoginPage(driver)
-            .login(currentUser.getLogin(), currentUser.getPassword());
+            .enterLogin(currentUser.getLogin())
+            .enterPassword(currentUser.getPassword())
+            .clickLogin();
 
         assertThat(mainPage.getChallengerNames()).containsExactly(
             IntStream.range(0, 8)
