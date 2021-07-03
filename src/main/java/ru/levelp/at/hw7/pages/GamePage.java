@@ -97,7 +97,7 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickPreviousMoveOnLastMove() {
-        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
+        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         previousMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
@@ -107,7 +107,7 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickPreviousMoveOnSecondMove() {
-        String oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -117,8 +117,8 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickPreviousMove() {
-        String oldNextMoveId = nextMoveButton.getAttribute("nextMove");
-        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
+        String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
+        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         previousMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -128,7 +128,7 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickNextMoveOnFirstMove() {
-        String oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         nextMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -138,7 +138,7 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickNextMoveOnSecondToLastMove() {
-        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
+        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         nextMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
@@ -148,8 +148,8 @@ public class GamePage extends AbstractPage {
     }
 
     public GamePage clickNextMove() {
-        String oldNextMoveId = nextMoveButton.getAttribute("nextMove");
-        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
+        String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
+        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         nextMoveButton.click();
         driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
