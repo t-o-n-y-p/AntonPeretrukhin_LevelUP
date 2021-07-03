@@ -74,9 +74,9 @@ public abstract class BaseTest {
     protected void checkChessBoard(String expectedBoard) {
         List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         String chessBoard = IntStream.range(0, 72)
-                                     .filter(i -> i % 9 != 0)
-                                     .mapToObj(i -> chessBoardSquares.get(i).getText())
-                                     .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> chessBoardSquares.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(expectedBoard);
     }
 

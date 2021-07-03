@@ -126,13 +126,11 @@ public class PostgresqlConnectionUtil {
 
     @SneakyThrows
     private static int getId() {
-        int id;
         try (PreparedStatement idStatement
                  = connection.prepareStatement("SELECT nextval('hibernate_sequence') as num")) {
             ResultSet resultSet = idStatement.executeQuery();
             resultSet.next();
-            id = resultSet.getInt("num");
+            return resultSet.getInt("num");
         }
-        return id;
     }
 }

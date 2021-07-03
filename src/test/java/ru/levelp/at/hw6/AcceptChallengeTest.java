@@ -77,13 +77,13 @@ public class AcceptChallengeTest extends BaseTest {
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
         WebElement opponentToMove = driver.findElement(By.className("alert-info"));
         assertThat(opponentToMove).hasFieldOrPropertyWithValue("text", "Opponent to move.");
-        assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(1);
+        assertThat(driver.findElements(By.className("form-row"))).hasSize(0);
         List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         List<WebElement> finalChessBoardSquares = chessBoardSquares;
         String chessBoard = IntStream.range(0, 72)
-                                     .filter(i -> i % 9 != 0)
-                                     .mapToObj(i -> finalChessBoardSquares.get(i).getText())
-                                     .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> finalChessBoardSquares.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(
             "♖;♘;♗;♔;♕;♗;♘;♖;♙;♙;♙;♙;♙;♙;♙;♙;"
             + ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
@@ -103,10 +103,9 @@ public class AcceptChallengeTest extends BaseTest {
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//button[text()='Accept']")).get(0).click();
         successAlert = driver.findElement(By.className("alert-success"));
         assertThat(successAlert).hasFieldOrPropertyWithValue("text", "Challenge accepted.");
-        challengerNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//th"))
-                                .stream()
-                                .map(th -> th.getText().split("\\s")[1])
-                                .collect(Collectors.toList());
+        challengerNames = driver.findElements(By.xpath("//div[contains(@class,'d-none')][1]//th")).stream()
+            .map(th -> th.getText().split("\\s")[1])
+            .collect(Collectors.toList());
         assertThat(challengerNames).containsExactly(
             IntStream.range(2, 10)
                      .mapToObj(i -> USERS.get(11 - i).getLogin())
@@ -123,13 +122,13 @@ public class AcceptChallengeTest extends BaseTest {
         );
 
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
-        assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(2);
+        assertThat(driver.findElements(By.className("form-row"))).hasSize(2);
         chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         List<WebElement> finalChessBoardSquares1 = chessBoardSquares;
         chessBoard = IntStream.range(0, 72)
-                              .filter(i -> i % 9 != 0)
-                              .mapToObj(i -> finalChessBoardSquares1.get(i).getText())
-                              .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> finalChessBoardSquares1.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(
             "♜;♞;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;♟;♟;♟;♟;"
                 + ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"

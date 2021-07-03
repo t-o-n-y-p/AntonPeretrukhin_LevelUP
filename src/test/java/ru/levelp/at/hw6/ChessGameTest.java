@@ -38,9 +38,9 @@ public class ChessGameTest extends BaseTest {
         List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         List<WebElement> finalChessBoardSquares = chessBoardSquares;
         String chessBoard = IntStream.range(0, 72)
-                                     .filter(i -> i % 9 != 0)
-                                     .mapToObj(i -> finalChessBoardSquares.get(i).getText())
-                                     .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> finalChessBoardSquares.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(
             "♜;♞;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;♟;♟;♟;♟;"
                 + ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
@@ -73,9 +73,9 @@ public class ChessGameTest extends BaseTest {
         chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         List<WebElement> finalChessBoardSquares1 = chessBoardSquares;
         chessBoard = IntStream.range(0, 72)
-                              .filter(i -> i % 9 != 0)
-                              .mapToObj(i -> finalChessBoardSquares1.get(i).getText())
-                              .collect(Collectors.joining(";"));
+            .filter(i -> i % 9 != 0)
+            .mapToObj(i -> finalChessBoardSquares1.get(i).getText())
+            .collect(Collectors.joining(";"));
         assertThat(chessBoard).isEqualTo(
             "♜;♞;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;♟;♟;♟;♟;"
                 + ";;;;;;;;;;;;;;;;;;;;♙;;;;;;;;;;;;"
