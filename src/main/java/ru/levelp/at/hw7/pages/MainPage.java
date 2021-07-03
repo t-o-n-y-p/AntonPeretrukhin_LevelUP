@@ -25,6 +25,8 @@ public class MainPage extends AbstractPage {
     private List<WebElement> acceptChallengeButtons;
     @FindBy(xpath = "//div[contains(@class,'d-none')][2]//button[text()='Open']")
     private List<WebElement> openGameButtons;
+    @FindBy(css = "nav > a")
+    private WebElement navigationTitle;
 
     public MainPage(WebDriver driver) {
         super(driver);
@@ -72,5 +74,9 @@ public class MainPage extends AbstractPage {
     public MainPage acceptChallenge(int index) {
         acceptChallengeButtons.get(index).click();
         return new MainPage(driver);
+    }
+
+    public String getNavigationTitle() {
+        return navigationTitle.getText();
     }
 }

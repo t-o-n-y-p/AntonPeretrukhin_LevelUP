@@ -28,7 +28,7 @@ public class AcceptChallengeTest extends BaseTest {
             .enterLogin(currentUser.getLogin())
             .enterPassword(currentUser.getPassword())
             .clickLogin();
-
+        assertThat(mainPage.getNavigationTitle()).startsWith(USERS.get(0).getLogin() + " (");
         assertThat(mainPage.getChallengerNames()).containsExactly(
             IntStream.range(0, 8)
                      .mapToObj(i -> USERS.get(11 - i).getLogin())

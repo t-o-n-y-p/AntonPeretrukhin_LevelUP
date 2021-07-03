@@ -14,12 +14,13 @@ public class CreateChallengeTest extends BaseTest {
     @Test
     public void testCreateChallenge() {
         User currentUser = USERS.get(1);
-        CreateChallengeStep1Page stepOnePage = new LoginPage(driver)
+        MainPage mainPage = new LoginPage(driver)
             .enterLogin(currentUser.getLogin())
             .enterPassword(currentUser.getPassword())
-            .clickLogin()
-            .clickCreateChallenge();
+            .clickLogin();
+        assertThat(mainPage.getNavigationTitle()).startsWith(USERS.get(1).getLogin() + " (");
 
+        CreateChallengeStep1Page stepOnePage = mainPage.clickCreateChallenge();
         Set<String> actualUsernames = stepOnePage.getOpponentUsernames();
         assertThat(actualUsernames).hasSize(8);
 
@@ -34,7 +35,7 @@ public class CreateChallengeTest extends BaseTest {
         stepOnePage = stepOnePage.fillSearchField(USERS.get(0).getLogin()).clickSearch();
         assertThat(stepOnePage.getOpponentUsernames()).containsOnly(USERS.get(0).getLogin());
 
-        MainPage mainPage = stepOnePage.selectOpponent(0).clickCreateChallenge();
+        mainPage = stepOnePage.selectOpponent(0).clickCreateChallenge();
         assertThat(mainPage.getSuccessAlertText()).isEqualTo("Challenge created.");
 
         currentUser = USERS.get(0);
@@ -42,7 +43,7 @@ public class CreateChallengeTest extends BaseTest {
             .enterLogin(currentUser.getLogin())
             .enterPassword(currentUser.getPassword())
             .clickLogin();
-
+        assertThat(mainPage.getNavigationTitle()).startsWith(USERS.get(0).getLogin() + " (");
         assertThat(mainPage.getChallengerNames()).containsOnly(USERS.get(1).getLogin());
 
         mainPage.clickLogout();
