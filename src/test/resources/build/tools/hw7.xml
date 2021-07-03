@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
 
-<suite name="HW6">
+<suite name="HW7">
 
   <test name="Create challenge test">
     <classes>
