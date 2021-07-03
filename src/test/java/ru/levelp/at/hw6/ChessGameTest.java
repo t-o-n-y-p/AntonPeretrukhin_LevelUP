@@ -3,10 +3,12 @@ package ru.levelp.at.hw6;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.testng.annotations.BeforeTest;
@@ -133,8 +135,12 @@ public class ChessGameTest extends BaseTest {
         String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId)
+        );
         assertThat(previousMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(nextMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "2. g1f3");
@@ -146,8 +152,12 @@ public class ChessGameTest extends BaseTest {
         oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId)
+        );
         assertThat(previousMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(nextMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "1. ... e7e5");
@@ -158,8 +168,12 @@ public class ChessGameTest extends BaseTest {
 
         oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
-        wait.until(ExpectedConditions.attributeToBe(previousMoveButton, "disabled", "true"));
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            ExpectedConditions.attributeToBe(previousMoveButton, "disabled", "true")
+        );
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId)
+        );
         assertThat(nextMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "1. e2e4");
         checkChessBoard("♜;♞;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;♟;♟;♟;♟;"
@@ -169,8 +183,8 @@ public class ChessGameTest extends BaseTest {
 
         oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         nextMoveButton.click();
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "disabled", "true"));
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(new AttributeNotEqualToCondition(previousMoveButton, "disabled", "true"));
+        gamePageNavigationWait(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
         assertThat(nextMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "1. ... e7e5");
         checkChessBoard("♜;♞;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;;♟;♟;♟;"
@@ -181,8 +195,12 @@ public class ChessGameTest extends BaseTest {
         oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         nextMoveButton.click();
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId)
+        );
         assertThat(previousMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(nextMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "2. g1f3");
@@ -193,8 +211,12 @@ public class ChessGameTest extends BaseTest {
 
         oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         nextMoveButton.click();
-        wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
-        wait.until(ExpectedConditions.attributeToBe(nextMoveButton, "disabled", "true"));
+        gamePageNavigationWait(
+            new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId)
+        );
+        gamePageNavigationWait(
+            ExpectedConditions.attributeToBe(nextMoveButton, "disabled", "true")
+        );
         assertThat(previousMoveButton.getAttribute("disabled")).isEqualTo(null);
         assertThat(notationFakeButton).hasFieldOrPropertyWithValue("text", "2. ... b8c6");
         checkChessBoard("♜;;♝;♛;♚;♝;♞;♜;♟;♟;♟;♟;;♟;♟;♟;"
@@ -203,7 +225,7 @@ public class ChessGameTest extends BaseTest {
         );
 
         driver.findElement(By.xpath("//button[text()='Resign']")).click();
-        wait.until(ExpectedConditions.attributeToBe(By.id("resign-modal"), "aria-hidden", ""));
+        gamePageNavigationWait(ExpectedConditions.attributeToBe(By.id("resign-modal"), "aria-hidden", ""));
         driver.findElement(By.xpath("//button[text()='Resign the game']")).click();
         WebElement resignAlert = driver.findElement(By.className("alert-info"));
         assertThat(resignAlert).hasFieldOrPropertyWithValue(
@@ -247,5 +269,11 @@ public class ChessGameTest extends BaseTest {
 
         driver.findElement(By.linkText("Main page")).click();
         driver.findElement(By.linkText("Logout")).click();
+    }
+
+    private void gamePageNavigationWait(ExpectedCondition<Boolean> expectedCondition) {
+        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+        wait.until(expectedCondition);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 }
