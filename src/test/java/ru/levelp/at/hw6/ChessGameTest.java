@@ -34,7 +34,7 @@ public class ChessGameTest extends BaseTest {
         assertThat(opponentNames).containsOnly(USERS.get(1).getLogin());
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
 
-        assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(2);
+        assertThat(driver.findElements(By.className("form-row"))).hasSize(2);
         List<WebElement> chessBoardSquares = driver.findElements(By.cssSelector("#chess-board td"));
         List<WebElement> finalChessBoardSquares = chessBoardSquares;
         String chessBoard = IntStream.range(0, 72)
@@ -116,7 +116,7 @@ public class ChessGameTest extends BaseTest {
         login(currentUser);
 
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
-        assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(3);
+        assertThat(driver.findElements(By.className("form-row"))).hasSize(2);
 
         WebElement previousMoveButton = driver.findElement(By.id("previous-move"));
         WebElement nextMoveButton = driver.findElement(By.id("next-move"));
@@ -130,8 +130,8 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;;♖"
         );
 
-        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
-        String oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        String oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
+        String oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -143,8 +143,8 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;;♖"
         );
 
-        oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
-        oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
+        oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -156,7 +156,7 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;♘;♖"
         );
 
-        oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         previousMoveButton.click();
         wait.until(ExpectedConditions.attributeToBe(previousMoveButton, "disabled", "true"));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -167,7 +167,7 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;♘;♖"
         );
 
-        oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         nextMoveButton.click();
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "disabled", "true"));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -178,8 +178,8 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;♘;♖"
         );
 
-        oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
-        oldNextMoveId = nextMoveButton.getAttribute("nextMove");
+        oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
+        oldNextMoveId = nextMoveButton.getAttribute("nextMoveId");
         nextMoveButton.click();
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(new AttributeNotEqualToCondition(nextMoveButton, "nextMoveId", oldNextMoveId));
@@ -191,7 +191,7 @@ public class ChessGameTest extends BaseTest {
             + "♙;♙;♙;♙;;♙;♙;♙;♖;♘;♗;♕;♔;♗;;♖"
         );
 
-        oldPreviousMoveId = previousMoveButton.getAttribute("previousMove");
+        oldPreviousMoveId = previousMoveButton.getAttribute("previousMoveId");
         nextMoveButton.click();
         wait.until(new AttributeNotEqualToCondition(previousMoveButton, "previousMoveId", oldPreviousMoveId));
         wait.until(ExpectedConditions.attributeToBe(nextMoveButton, "disabled", "true"));
@@ -228,7 +228,6 @@ public class ChessGameTest extends BaseTest {
         login(currentUser);
         driver.findElements(By.xpath("//div[contains(@class,'d-none')][2]//button[text()='Open']")).get(0).click();
 
-        assertThat(driver.findElements(By.cssSelector("#container > div"))).hasSize(3);
         checkChessBoard(chessBoardBefore);
 
         Select square1 = new Select(driver.findElement(By.id("square1")));
