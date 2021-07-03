@@ -3,8 +3,6 @@ package ru.levelp.at.hw8.pages;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import ru.levelp.at.hw8.pages.AbstractPage;
-import ru.levelp.at.hw8.pages.MainPage;
 
 public class SignupPage extends AbstractPage {
 
