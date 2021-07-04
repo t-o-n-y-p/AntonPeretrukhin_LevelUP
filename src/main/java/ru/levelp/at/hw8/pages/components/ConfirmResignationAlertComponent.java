@@ -3,9 +3,8 @@ package ru.levelp.at.hw8.pages.components;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import ru.levelp.at.hw8.pages.AbstractPageComponent;
 
-public class ConfirmResignationAlertComponent extends AbstractPageComponent {
+public class ConfirmResignationAlertComponent extends RootElementPageComponent {
 
     private static final String CONFIRM_BUTTON_LOCATOR = "button[type=submit]";
 

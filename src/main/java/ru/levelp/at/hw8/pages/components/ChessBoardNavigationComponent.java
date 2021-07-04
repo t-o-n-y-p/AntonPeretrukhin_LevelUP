@@ -6,10 +6,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import ru.levelp.at.hw8.pages.AbstractPageComponent;
 import ru.levelp.at.hw8.pages.utils.AttributeNotEqualToCondition;
 
-public class ChessBoardNavigationComponent extends AbstractPageComponent {
+public class ChessBoardNavigationComponent extends RootElementPageComponent {
 
     private final WebElement previousMoveButton;
     private final WebElement nextMoveButton;

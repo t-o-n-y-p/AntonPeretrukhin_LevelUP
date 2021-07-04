@@ -4,15 +4,12 @@ import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.units.qual.A;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
-import ru.levelp.at.hw8.pages.LoginPage;
-import ru.levelp.at.hw8.pages.RootPage;
 import ru.levelp.at.hw8.steps.ActionStep;
 import ru.levelp.at.hw8.steps.AssertionStep;
 import ru.levelp.at.hw8.utils.PostgresqlConnectionUtil;
@@ -36,7 +33,7 @@ public abstract class BaseTest {
         actionStep = new ActionStep(driver);
 
         PostgresqlConnectionUtil.clearData();
-        actionStep.logout();
+        actionStep.openIndexAndLogoutIfNecessary();
         while (USERS.size() < 12) {
             User currentUser = new User(
                 FAKER.internet().password(4, 9),
@@ -57,7 +54,7 @@ public abstract class BaseTest {
         driver.manage().window().maximize();
         actionStep = new ActionStep(driver);
         assertionStep = new AssertionStep(driver);
-        actionStep.logout();
+        actionStep.openIndexAndLogoutIfNecessary();
     }
 
     @AfterMethod

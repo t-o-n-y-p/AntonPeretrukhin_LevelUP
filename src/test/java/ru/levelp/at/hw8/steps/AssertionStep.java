@@ -21,6 +21,10 @@ public class AssertionStep extends AbstractStep {
         assertThat(createChallengeStep1Page.getResultListBlock().getItems()).hasSize(expectedSize);
     }
 
+    public void assertNumberOfChallengesOnPage(int expectedSize) {
+        assertThat(challengesListPage.getResultListBlock().getItems()).hasSize(expectedSize);
+    }
+
     public void assertOpponentSetContainsExactly(Set<String> names, List<User> users) {
         assertThat(
             names.stream()
@@ -45,7 +49,11 @@ public class AssertionStep extends AbstractStep {
         assertThat(createChallengeStep1Page.getResultListBlock().getNextPageButtonStatus()).isEqualTo("true");
     }
 
-    public void assertChallengesSetContainsExactly(List<String> names, List<User> users) {
+    public void assertThatChallengeNextPageButtonIsDisabled() {
+        assertThat(challengesListPage.getResultListBlock().getNextPageButtonStatus()).isEqualTo("true");
+    }
+
+    public void assertChallengesListContainsExactly(List<String> names, List<User> users) {
         assertThat(
             names.stream()
                 .map(name -> name.split("\\s")[1])
@@ -57,5 +65,39 @@ public class AssertionStep extends AbstractStep {
 
     public void assertChallengeCreatedAlertOnMainPage() {
         assertThat(mainPage.getSuccessAlertText()).isEqualTo("Challenge created.");
+    }
+
+    public void assertChallengeAcceptedAlert() {
+        assertThat(challengesListPage.getSuccessAlertText()).isEqualTo("Challenge accepted.");
+    }
+
+    public void assertChallengeAcceptedAlertOnMainPage() {
+        assertThat(mainPage.getSuccessAlertText()).isEqualTo("Challenge accepted.");
+    }
+
+    public void assertGameListContainsExactly(List<String> names, List<User> users) {
+        assertThat(
+            names.stream()
+                 .map(name -> name.split("\\s")[1])
+                 .collect(Collectors.toList())
+        ).containsExactly(
+            users.stream().map(User::getLogin).toArray(String[]::new)
+        );
+    }
+
+    public void assertOpponentToMoveAlert() {
+        assertThat(gamePage.getInfoAlertText()).isEqualTo("Opponent to move.");
+    }
+
+    public void assertGameMoveFormIsEmpty() {
+        assertThat(gamePage.getMoveForm().isEmpty()).isEqualTo(true);
+    }
+
+    public void assertGameMoveFormIsNotEmpty() {
+        assertThat(gamePage.getMoveForm().isEmpty()).isEqualTo(false);
+    }
+
+    public void assertChessBoardStateEquals(String board) {
+        assertThat(gamePage.getChessBoard().getChessBoardState()).isEqualTo(board);
     }
 }

@@ -6,10 +6,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
-import ru.levelp.at.hw8.pages.AbstractPageComponent;
-import ru.levelp.at.hw8.pages.GamePage;
 
-public class ChessGameMoveFormComponent extends AbstractPageComponent {
+public class ChessGameMoveFormComponent extends RootElementPageComponent {
 
     private static final String MAKE_MOVE_BUTTON_LOCATOR = "#make-move button";
     private static final String RESIGN_BUTTON_LOCATOR = "#resign > button";
@@ -39,5 +37,9 @@ public class ChessGameMoveFormComponent extends AbstractPageComponent {
 
     public ConfirmResignationAlertComponent getConfirmResignationAlert() {
         return new ConfirmResignationAlertComponent(driver, root.findElement(By.id("resign-modal")));
+    }
+
+    public boolean isEmpty() {
+        return root.findElements(By.className("form-row")).isEmpty();
     }
 }

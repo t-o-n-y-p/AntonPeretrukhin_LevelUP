@@ -6,9 +6,8 @@ import java.util.stream.IntStream;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import ru.levelp.at.hw8.pages.AbstractPageComponent;
 
-public class ChessBoardComponent extends AbstractPageComponent {
+public class ChessBoardComponent extends RootElementPageComponent {
 
     public ChessBoardComponent(WebDriver driver, WebElement root) {
         super(driver, root);

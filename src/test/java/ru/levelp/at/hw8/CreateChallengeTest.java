@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.testng.annotations.Test;
-import ru.levelp.at.hw8.pages.CreateChallengeStep1Page;
-import ru.levelp.at.hw8.pages.LoginPage;
-import ru.levelp.at.hw8.pages.MainPage;
 import ru.levelp.at.hw8.utils.User;
 
 public class CreateChallengeTest extends BaseTest {
@@ -38,7 +35,7 @@ public class CreateChallengeTest extends BaseTest {
         actionStep.logoutFromMainPage();
         actionStep.login(USERS.get(0));
         assertionStep.assertThatLoginIsSuccessful(USERS.get(0));
-        assertionStep.assertChallengesSetContainsExactly(
+        assertionStep.assertChallengesListContainsExactly(
             actionStep.getChallengeNamesFromMainPage(), USERS.subList(1, 2)
         );
 

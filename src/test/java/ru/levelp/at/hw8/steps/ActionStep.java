@@ -51,15 +51,21 @@ public class ActionStep extends AbstractStep {
 
     public void logoutFromGamePage() {
         gamePage.getNavigationBar().clickLinkByName("Main page");
-        logoutFromMainPage();
+        mainPage.getNavigationBar().clickLinkByName("Logout");
     }
 
-    public void logout() {
+    public void openIndexAndLogoutIfNecessary() {
         rootPage.openAndLogout();
     }
 
     public void clickCreateChallenge() {
         mainPage.getNavigationBar().clickLinkByName("Create challenge");
+    }
+
+    public List<String> getChallengeNames() {
+        return challengesListPage.getResultListBlock().getItems().stream()
+            .map(ListComponent::getTitle)
+            .collect(Collectors.toList());
     }
 
     public Set<String> getOpponentNames() {
@@ -70,6 +76,10 @@ public class ActionStep extends AbstractStep {
 
     public void openNextOpponentPage() {
         createChallengeStep1Page.getResultListBlock().clickNextPage();
+    }
+
+    public void openNextChallengePage() {
+        challengesListPage.getResultListBlock().clickNextPage();
     }
 
     public void searchOpponentByName(String name) {
@@ -91,5 +101,35 @@ public class ActionStep extends AbstractStep {
         return mainPage.getChallengeBlock().getItems().stream()
             .map(ListComponent::getTitle)
             .collect(Collectors.toList());
+    }
+
+    public List<String> getGameNamesFromMainPage() {
+        return mainPage.getGameBlock().getItems().stream()
+            .map(ListComponent::getTitle)
+            .collect(Collectors.toList());
+    }
+
+    public void viewAllIncomingChallenges() {
+        mainPage.getChallengeBlock().clickViewAll();
+    }
+
+    public void acceptChallenge(int index) {
+        challengesListPage.getResultListBlock().getItems().get(index).clickComponentButton();
+    }
+
+    public void acceptChallengeFromMainPage(int index) {
+        mainPage.getChallengeBlock().getItems().get(index).clickComponentButton();
+    }
+
+    public void openGameFromMainPage(int index) {
+        mainPage.getGameBlock().getItems().get(index).clickComponentButton();
+    }
+
+    public void clickMainPageFromChallengeList() {
+        challengesListPage.getNavigationBar().clickMainPage();
+    }
+
+    public void clickMainPageFromGame() {
+        gamePage.getNavigationBar().clickLinkByName("Main page");
     }
 }
