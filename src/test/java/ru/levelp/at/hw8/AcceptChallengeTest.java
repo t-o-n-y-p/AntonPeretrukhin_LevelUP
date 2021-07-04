@@ -23,7 +23,7 @@ public class AcceptChallengeTest extends BaseTest {
         PostgresqlConnectionUtil.createTestChallenges();
     }
 
-    @Test
+    @Test(description = "Testing of user accepting incoming challenges")
     public void testAcceptChallenge() {
         actionStep.login(USERS.get(0));
         assertionStep.assertThatLoginIsSuccessful(USERS.get(0));

@@ -19,7 +19,7 @@ public class ChessGameTest extends BaseTest {
         PostgresqlConnectionUtil.createTestGame();
     }
 
-    @Test
+    @Test(description = "Testing of users playing chess")
     public void testChessGame() {
         actionStep.login(USERS.get(0));
         assertionStep.assertThatLoginIsSuccessful(USERS.get(0));

@@ -10,7 +10,7 @@ import ru.levelp.at.hw8.utils.User;
 
 public class CreateChallengeTest extends BaseTest {
 
-    @Test
+    @Test(description = "Testing of user creating challenges")
     public void testCreateChallenge() {
         actionStep.login(USERS.get(1));
         assertionStep.assertThatLoginIsSuccessful(USERS.get(1));
