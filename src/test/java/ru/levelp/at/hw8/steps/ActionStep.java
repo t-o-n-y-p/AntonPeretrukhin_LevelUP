@@ -36,9 +36,7 @@ public class ActionStep extends AbstractStep {
         logoutFromMainPage();
     }
 
-    public void makeMove(User user, String from, String to) {
-        login(user);
-        mainPage.getGameBlock().getItems().get(0).clickComponentButton();
+    public void makeMove(String from, String to) {
         ChessGameMoveFormComponent component = gamePage.getMoveForm();
         component.selectFromSquare(from);
         component.selectToSquare(to);
@@ -131,5 +129,34 @@ public class ActionStep extends AbstractStep {
 
     public void clickMainPageFromGame() {
         gamePage.getNavigationBar().clickLinkByName("Main page");
+    }
+
+    public void clickPreviousMoveOnLastMove() {
+        gamePage.getChessBoardNavigation().clickPreviousMoveOnLastMove();
+    }
+
+    public void clickPreviousMoveOnSecondMove() {
+        gamePage.getChessBoardNavigation().clickPreviousMoveOnSecondMove();
+    }
+
+    public void clickPreviousMove() {
+        gamePage.getChessBoardNavigation().clickPreviousMove();
+    }
+
+    public void clickNextMoveOnFirstMove() {
+        gamePage.getChessBoardNavigation().clickNextMoveOnFirstMove();
+    }
+
+    public void clickNextMoveOnSecondToLastMove() {
+        gamePage.getChessBoardNavigation().clickNextMoveOnSecondToLastMove();
+    }
+
+    public void clickNextMove() {
+        gamePage.getChessBoardNavigation().clickNextMove();
+    }
+
+    public void resignTheGame() {
+        gamePage.getMoveForm().clickResign();
+        gamePage.getMoveForm().getConfirmResignationAlert().confirmResignation();
     }
 }

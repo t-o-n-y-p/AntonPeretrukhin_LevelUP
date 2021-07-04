@@ -89,12 +89,28 @@ public class AssertionStep extends AbstractStep {
         assertThat(gamePage.getInfoAlertText()).isEqualTo("Opponent to move.");
     }
 
+    public void assertGameResultAlert(String outcome) {
+        assertThat(gamePage.getInfoAlertText()).isEqualTo(outcome);
+    }
+
+    public void assertIllegalMoveAlert() {
+        assertThat(gamePage.getWarningAlertText()).isEqualTo("The move you made is illegal. Please make a legal move.");
+    }
+
+    public void assertLegalMoveAlert() {
+        assertThat(gamePage.getSuccessAlertText()).isEqualTo("The move has been made.");
+    }
+
     public void assertGameMoveFormIsEmpty() {
         assertThat(gamePage.getMoveForm().isEmpty()).isEqualTo(true);
     }
 
     public void assertGameMoveFormIsNotEmpty() {
         assertThat(gamePage.getMoveForm().isEmpty()).isEqualTo(false);
+    }
+
+    public void assertNotationEquals(String notation) {
+        assertThat(gamePage.getChessBoardNavigation().getNotation()).isEqualTo(notation);
     }
 
     public void assertChessBoardStateEquals(String board) {
