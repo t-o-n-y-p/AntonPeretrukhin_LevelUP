@@ -1,0 +1,23 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="HW7">
+
+  <test name="Create challenge test">
+    <classes>
+      <class name="ru.levelp.at.hw7.CreateChallengeTest"/>
+    </classes>
+  </test>
+
+  <test name="Accept challenge test">
+    <classes>
+      <class name="ru.levelp.at.hw7.AcceptChallengeTest"/>
+    </classes>
+  </test>
+
+  <test name="Chess game test">
+    <classes>
+      <class name="ru.levelp.at.hw7.ChessGameTest"/>
+    </classes>
+  </test>
+
+</suite>
