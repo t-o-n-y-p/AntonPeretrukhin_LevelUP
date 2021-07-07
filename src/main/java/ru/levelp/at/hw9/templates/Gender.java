@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 public enum Gender {
 
     MALE("Male"),
-    FEMALE("Female");
+    FEMALE("Female"),
+    INVALID("qwerty"),
+    BLANK("    "),
+    EMPTY("");
 
     @JsonValue
     private final String value;

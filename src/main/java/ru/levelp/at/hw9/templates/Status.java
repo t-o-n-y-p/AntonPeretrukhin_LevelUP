@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 public enum Status {
 
     ACTIVE("Active"),
-    INACTIVE("Inactive");
+    INACTIVE("Inactive"),
+    INVALID("qwerty"),
+    BLANK("    "),
+    EMPTY("");
 
     @JsonValue
     private final String value;

@@ -22,6 +22,7 @@ import ru.levelp.at.hw9.templates.Gender;
 import ru.levelp.at.hw9.templates.Status;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
+import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;
 import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 
 public class GoRestTest {
@@ -59,7 +60,8 @@ public class GoRestTest {
     @DataProvider
     private Object[][] getAddUserData() {
         Object[][] data = new Object[][] {
-            {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE}
+            {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
         };
         return Arrays.stream(data)
             .map(e -> new Object[]{
@@ -83,6 +85,84 @@ public class GoRestTest {
                     .build()
             })
             .toArray(Object[][]::new);
+    }
+
+    @DataProvider
+    private Object[][] getAddUserNegativeData() {
+        return new Object[][]{
+            {
+                UserRequestData.builder()
+                    .name("")
+                    .gender(null)
+                    .email("qwerty")
+                    .status(Status.BLANK)
+                    .build(),
+                ResponseBody.<List<ErrorResponseData>>builder()
+                    .code(422)
+                    .meta(null)
+                    .data(List.of(
+                        new ErrorResponseData("name", "can't be blank"),
+                        new ErrorResponseData("gender", "can't be blank"),
+                        new ErrorResponseData("email", "is invalid"),
+                        new ErrorResponseData("status", "can't be blank")
+                    ))
+                    .build()
+            },
+            {
+                UserRequestData.builder()
+                    .name("    ")
+                    .gender(Gender.EMPTY)
+                    .email(null)
+                    .status(Status.INVALID)
+                    .build(),
+                ResponseBody.<List<ErrorResponseData>>builder()
+                    .code(422)
+                    .meta(null)
+                    .data(List.of(
+                        new ErrorResponseData("name", "can't be blank"),
+                        new ErrorResponseData("gender", "can't be blank"),
+                        new ErrorResponseData("email", "can't be blank"),
+                        new ErrorResponseData("status", "can be Active or Inactive")
+                    ))
+                    .build()
+            },
+            {
+                UserRequestData.builder()
+                    .name("0".repeat(10000))
+                    .gender(Gender.BLANK)
+                    .email("")
+                    .status(null)
+                    .build(),
+                ResponseBody.<List<ErrorResponseData>>builder()
+                    .code(422)
+                    .meta(null)
+                    .data(List.of(
+                        new ErrorResponseData("name", "is too long (maximum is 200 characters)"),
+                        new ErrorResponseData("gender", "can't be blank"),
+                        new ErrorResponseData("email", "can't be blank"),
+                        new ErrorResponseData("status", "can't be blank")
+                    ))
+                    .build()
+            },
+            {
+                UserRequestData.builder()
+                    .name(null)
+                    .gender(Gender.INVALID)
+                    .email("    ")
+                    .status(Status.EMPTY)
+                    .build(),
+                ResponseBody.<List<ErrorResponseData>>builder()
+                    .code(422)
+                    .meta(null)
+                    .data(List.of(
+                        new ErrorResponseData("name", "can't be blank"),
+                        new ErrorResponseData("gender", "can be Male or Female"),
+                        new ErrorResponseData("email", "can't be blank"),
+                        new ErrorResponseData("status", "can't be blank")
+                    ))
+                    .build()
+            },
+        };
     }
 
     @Test(dataProvider = "getAddUserData")
@@ -115,6 +195,32 @@ public class GoRestTest {
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getUpdatedAt())
                   .isNotNull();
+        });
+    }
+
+    @Test(dataProvider = "getAddUserNegativeData")
+    public void testAddUserNegative(
+        UserRequestData requestBody,
+        ResponseBody<List<ErrorResponseData>> expectedResponseBody
+    ) {
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .ignoringCollectionOrder()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
         });
     }
 
