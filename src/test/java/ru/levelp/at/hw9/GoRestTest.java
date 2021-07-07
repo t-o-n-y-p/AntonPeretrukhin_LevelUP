@@ -224,4 +224,56 @@ public class GoRestTest {
         });
     }
 
+    @Test
+    public void testAddUserEmailAlreadyExists() {
+        String email = faker.internet().emailAddress();
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(email)
+            .status(Status.ACTIVE)
+            .build();
+        ResponseBody<UserResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        allCreatedUsers.add(responseBody.getData().getId());
+
+        requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.MALE)
+            .email(email)
+            .status(Status.INACTIVE)
+            .build();
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
+            .code(422)
+            .meta(null)
+            .data(List.of(
+                new ErrorResponseData("email", "has already been taken")
+            ))
+            .build();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .ignoringCollectionOrder()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
+        });
+    }
+
 }
