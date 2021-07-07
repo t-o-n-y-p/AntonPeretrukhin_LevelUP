@@ -21,6 +21,8 @@
         <webdrivermanager.version>4.4.3</webdrivermanager.version>
         <slf4j-api.version>1.7.30</slf4j-api.version>
         <javafaker.version>1.0.2</javafaker.version>
+        <rest-assured.version>4.4.0</rest-assured.version>
+        <jackson-databind.version>2.12.3</jackson-databind.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
@@ -75,6 +77,17 @@
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
             <version>${javafaker.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
         </dependency>
     </dependencies>
 
