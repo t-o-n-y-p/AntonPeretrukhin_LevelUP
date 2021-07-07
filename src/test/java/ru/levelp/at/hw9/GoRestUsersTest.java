@@ -25,37 +25,7 @@ import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;
 import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 
-public class GoRestTest {
-
-    private final List<Long> allCreatedUsers = new ArrayList<>();
-    private final Faker faker = new Faker();
-
-    @BeforeSuite
-    public void setUp() {
-        PreemptiveOAuth2HeaderScheme authenticationScheme = new PreemptiveOAuth2HeaderScheme();
-        authenticationScheme.setAccessToken("3ae4f0a21a4d9d7043dd096d767bce4d8567437c411c849cb0a180f27c40fed9");
-
-        RestAssured.baseURI = "https://gorest.co.in";
-        RestAssured.requestSpecification = new RequestSpecBuilder()
-            .log(LogDetail.ALL)
-            .setContentType(ContentType.JSON)
-            .setAuth(authenticationScheme)
-            .build();
-
-        RestAssured.responseSpecification = new ResponseSpecBuilder()
-            .log(LogDetail.ALL)
-            .build();
-    }
-
-    @AfterSuite
-    public void tearDown() {
-        for (Long id : allCreatedUsers) {
-            given()
-                .pathParam("id", id)
-                .when()
-                .delete("/public-api/users/{id}");
-        }
-    }
+public class GoRestUsersTest extends BaseTest {
 
     @DataProvider
     private Object[][] getAddUserData() {

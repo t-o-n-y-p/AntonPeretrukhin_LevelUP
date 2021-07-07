@@ -119,6 +119,12 @@
                 <test-suite.name>hw7.xml</test-suite.name>
             </properties>
         </profile>
+        <profile>
+            <id>hw9</id>
+            <properties>
+                <test-suite.name>hw9.xml</test-suite.name>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
