@@ -1,7 +1,8 @@
 package ru.levelp.at.hw9.templates.response.data;
 
-public class ErrorData {
+public class ErrorResponseData {
 
+    private String field;
     private String message;
 
 }

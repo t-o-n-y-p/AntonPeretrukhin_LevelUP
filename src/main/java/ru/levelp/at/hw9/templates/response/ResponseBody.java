@@ -1,8 +1,19 @@
 package ru.levelp.at.hw9.templates.response;
 
-import ru.levelp.at.hw9.templates.response.data.RestData;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-public class ResponseBody<T extends RestData> {
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
+@Getter
+@Builder
+public class ResponseBody<T> {
 
     private Integer code;
     private Metadata meta;

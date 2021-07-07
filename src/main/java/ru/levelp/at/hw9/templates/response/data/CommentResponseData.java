@@ -2,12 +2,13 @@ package ru.levelp.at.hw9.templates.response.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PostData {
+public class CommentResponseData {
 
     private Long id;
-    @JsonProperty("user_id")
-    private Long userId;
-    private String title;
+    @JsonProperty("post_id")
+    private Long postId;
+    private String name;
+    private String email;
     private String body;
     @JsonProperty("created_at")
     private String createdAt;
