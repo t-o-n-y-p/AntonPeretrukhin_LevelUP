@@ -1,11 +1,10 @@
-package ru.levelp.at.hw9.templates.response;
+package ru.levelp.at.hw9.templates.response.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @NoArgsConstructor
@@ -13,12 +12,9 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @Getter
-@Setter
 @Builder
-public class ResponseBody<T> {
+public class ErrorMessageResponseData {
 
-    private Integer code;
-    private Metadata meta;
-    private T data;
+    private String message;
 
 }
