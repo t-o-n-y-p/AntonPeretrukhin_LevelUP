@@ -1,4 +1,4 @@
-package ru.levelp.at.hw9.templates.response.data;
+package ru.levelp.at.hw9.templates.request.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -14,17 +14,12 @@ import lombok.ToString;
 @ToString
 @Getter
 @Builder
-public class CommentResponseData {
+public class CommentRequestData {
 
-    private Long id;
     @JsonProperty("post_id")
     private Long postId;
     private String name;
     private String email;
     private String body;
-    @JsonProperty("created_at")
-    private String createdAt;
-    @JsonProperty("updated_at")
-    private String updatedAt;
 
 }

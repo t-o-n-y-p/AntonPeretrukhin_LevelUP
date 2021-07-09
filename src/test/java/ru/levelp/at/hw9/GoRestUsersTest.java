@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.apache.commons.lang3.ObjectUtils.Null;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -28,7 +27,7 @@ import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 public class GoRestUsersTest extends BaseTest {
 
     @DataProvider
-    private Object[] getGetUserData() {
+    private Object[] getGetUserObjectData() {
         Object[][] data = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
@@ -44,16 +43,16 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getPostUserData() {
-        return getUserData(201);
+    private Object[][] getPostUserObjectData() {
+        return getUserObjectData(201);
     }
 
     @DataProvider
-    private Object[][] getPutUserData() {
-        return getUserData(200);
+    private Object[][] getPutUserObjectData() {
+        return getUserObjectData(200);
     }
 
-    private Object[][] getUserData(int statusCode) {
+    private Object[][] getUserObjectData(int statusCode) {
         Object[][] data = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
@@ -83,7 +82,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getPostOrPutUserNegativeData() {
+    private Object[][] getPostOrPutUserObjectNegativeData() {
         return new Object[][]{
             {
                 UserRequestData.builder()
@@ -161,7 +160,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getPostUserMissingFieldsData() {
+    private Object[][] getPostUserObjectMissingFieldsData() {
         String email = faker.internet().emailAddress();
         String name = faker.name().fullName();
         return new Object[][]{
@@ -225,7 +224,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getPutUserMissingFieldsData() {
+    private Object[][] getPutUserObjectMissingFieldsData() {
         Object[][] postData = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE},
@@ -273,8 +272,8 @@ public class GoRestUsersTest extends BaseTest {
     // TESTS
     // ------------------------------
 
-    @Test(dataProvider = "getPostUserData")
-    public void testPostUser(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
+    @Test(dataProvider = "getPostUserObjectData")
+    public void testPostUserObject(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
         ResponseBody<UserResponseData> actualResponseBody = given()
             .body(requestBody)
             .when()
@@ -306,8 +305,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getPostOrPutUserNegativeData")
-    public void testPostUserNegative(
+    @Test(dataProvider = "getPostOrPutUserObjectNegativeData")
+    public void testPostUserObjectNegative(
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
@@ -333,7 +332,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPostUserEmailAlreadyExists() {
+    public void testPostUserObjectEmailAlreadyExists() {
         String email = faker.internet().emailAddress();
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
@@ -384,8 +383,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getPostUserMissingFieldsData")
-    public void testPostUserMissingFields(
+    @Test(dataProvider = "getPostUserObjectMissingFieldsData")
+    public void testPostUserObjectMissingFields(
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
@@ -413,7 +412,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPostUserInvalidRequestBody() {
+    public void testPostUserObjectInvalidRequestBody() {
         given()
             .body("{}'")
             .when()
@@ -422,8 +421,8 @@ public class GoRestUsersTest extends BaseTest {
             .statusCode(500);
     }
 
-    @Test(dataProvider = "getGetUserData")
-    public void testGetUser(UserRequestData requestBody) {
+    @Test(dataProvider = "getGetUserObjectData")
+    public void testGetUserObject(UserRequestData requestBody) {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
@@ -470,7 +469,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testGetDeletedUser() {
+    public void testGetDeletedUserObject() {
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
             .gender(Gender.FEMALE)
@@ -512,7 +511,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testGetUserInvalidInput() {
+    public void testGetUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .when()
             .get("/public-api/users/qwerty")
@@ -531,7 +530,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testGetAllUsersFirstPage() {
+    public void testGetAllUserObjectsFirstPage() {
         for (int i = 0; i < 20; i++) {
             UserRequestData requestBody = UserRequestData.builder()
                 .name(faker.name().fullName())
@@ -601,8 +600,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getPutUserData")
-    public void testPutUser(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
+    @Test(dataProvider = "getPutUserObjectData")
+    public void testPutUserObject(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
         ResponseBody<UserResponseData> postResponseBody = given()
             .body(UserRequestData.builder()
                 .name(faker.name().fullName())
@@ -650,8 +649,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getPostOrPutUserNegativeData")
-    public void testPutUserNegative(
+    @Test(dataProvider = "getPostOrPutUserObjectNegativeData")
+    public void testPutUserObjectNegative(
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
@@ -694,8 +693,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getPutUserMissingFieldsData")
-    public void testPutUserMissingFields(
+    @Test(dataProvider = "getPutUserObjectMissingFieldsData")
+    public void testPutUserObjectMissingFields(
         UserRequestData postRequestBody,
         UserRequestData requestBody,
         ResponseBody<UserResponseData> expectedResponseBody
@@ -744,7 +743,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPutDeletedUser() {
+    public void testPutDeletedUserObject() {
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
             .gender(Gender.FEMALE)
@@ -787,7 +786,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPutUserEmailAlreadyExists() {
+    public void testPutUserObjectEmailAlreadyExists() {
         Object[][] data = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
@@ -851,7 +850,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPutUserInvalidRequestBody() {
+    public void testPutUserObjectInvalidRequestBody() {
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
             .gender(Gender.FEMALE)
@@ -881,7 +880,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testPutUserInvalidInput() {
+    public void testPutUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .body("{}")
             .when()
@@ -901,7 +900,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testDeleteUser() {
+    public void testDeleteUserObject() {
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
             .gender(Gender.FEMALE)
@@ -956,7 +955,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testDeleteDeletedUser() {
+    public void testDeleteDeletedUserObject() {
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
             .gender(Gender.FEMALE)
@@ -999,7 +998,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testDeleteUserInvalidInput() {
+    public void testDeleteUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .when()
             .delete("/public-api/users/qwerty")
