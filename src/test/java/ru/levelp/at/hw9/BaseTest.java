@@ -11,7 +11,7 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import java.util.ArrayList;
 import java.util.List;
-import org.testng.annotations.AfterSuite;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeSuite;
 
 public abstract class BaseTest {
@@ -38,7 +38,7 @@ public abstract class BaseTest {
             .build();
     }
 
-    @AfterSuite
+    @AfterClass
     public void tearDown() {
         for (Long id : allCreatedUsers) {
             given()
@@ -46,18 +46,21 @@ public abstract class BaseTest {
                 .when()
                 .delete("/public-api/users/{id}");
         }
+        allCreatedUsers.clear();
         for (Long id : allCreatedPosts) {
             given()
                 .pathParam("id", id)
                 .when()
                 .delete("/public-api/posts/{id}");
         }
+        allCreatedPosts.clear();
         for (Long id : allCreatedComments) {
             given()
                 .pathParam("id", id)
                 .when()
                 .delete("/public-api/comments/{id}");
         }
+        allCreatedComments.clear();
     }
 
 }

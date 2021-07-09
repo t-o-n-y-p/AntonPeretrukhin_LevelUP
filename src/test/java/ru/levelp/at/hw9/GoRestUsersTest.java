@@ -9,6 +9,8 @@ import io.restassured.internal.mapping.Jackson2Mapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -41,7 +43,16 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getAddUserData() {
+    private Object[][] getPostUserData() {
+        return getUserData(201);
+    }
+
+    @DataProvider
+    private Object[][] getPutUserData() {
+        return getUserData(200);
+    }
+
+    private Object[][] getUserData(int statusCode) {
         Object[][] data = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
@@ -55,7 +66,7 @@ public class GoRestUsersTest extends BaseTest {
                     .status((Status) e[3])
                     .build(),
                 ResponseBody.<UserResponseData>builder()
-                    .code(201)
+                    .code(statusCode)
                     .meta(null)
                     .data(
                         UserResponseData.builder()
@@ -71,7 +82,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getAddUserNegativeData() {
+    private Object[][] getPostOrPutUserNegativeData() {
         return new Object[][]{
             {
                 UserRequestData.builder()
@@ -149,7 +160,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @DataProvider
-    private Object[][] getAddUserMissingFieldsData() {
+    private Object[][] getPostUserMissingFieldsData() {
         String email = faker.internet().emailAddress();
         String name = faker.name().fullName();
         return new Object[][]{
@@ -208,12 +219,61 @@ public class GoRestUsersTest extends BaseTest {
                         new ErrorResponseData("status", "can't be blank")
                     ))
                     .build()
-            },
+            }
         };
     }
 
-    @Test(dataProvider = "getAddUserData")
-    public void testAddUser(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
+    @DataProvider
+    private Object[][] getPutUserMissingFieldsData() {
+        Object[][] postData = new Object[][] {
+            {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE},
+            {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
+        };
+        Object[][] putData = new Object[][] {
+            {null, Gender.MALE, faker.internet().emailAddress(), Status.INACTIVE},
+            {faker.name().fullName(), null, faker.internet().emailAddress(), Status.INACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, null, Status.ACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), null}
+        };
+        return IntStream.range(0, Integer.min(postData.length, putData.length))
+            .mapToObj(i -> new Object[]{
+                UserRequestData.builder()
+                    .name((String) postData[i][0])
+                    .gender((Gender) postData[i][1])
+                    .email((String) postData[i][2])
+                    .status((Status) postData[i][3])
+                    .build(),
+                UserRequestData.builder()
+                    .name((String) putData[i][0])
+                    .gender((Gender) putData[i][1])
+                    .email((String) putData[i][2])
+                    .status((Status) putData[i][3])
+                    .build(),
+                ResponseBody.<UserResponseData>builder()
+                    .code(200)
+                    .meta(null)
+                    .data(
+                        UserResponseData.builder()
+                            .name((String) (putData[i][0] == null ? postData[i][0] : putData[i][0]))
+                            .gender((Gender) (putData[i][1] == null ? postData[i][1] : putData[i][1]))
+                            .email((String) (putData[i][2] == null ? postData[i][2] : putData[i][2]))
+                            .status((Status) (putData[i][3] == null ? postData[i][3] : putData[i][3]))
+                            .build()
+                    )
+                    .build()
+            })
+            .toArray(Object[][]::new);
+
+    }
+
+    // ------------------------------
+    // TESTS
+    // ------------------------------
+
+    @Test(dataProvider = "getPostUserData")
+    public void testPostUser(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
         ResponseBody<UserResponseData> actualResponseBody = given()
             .body(requestBody)
             .when()
@@ -245,8 +305,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getAddUserNegativeData")
-    public void testAddUserNegative(
+    @Test(dataProvider = "getPostOrPutUserNegativeData")
+    public void testPostUserNegative(
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
@@ -272,7 +332,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testAddUserEmailAlreadyExists() {
+    public void testPostUserEmailAlreadyExists() {
         String email = faker.internet().emailAddress();
         UserRequestData requestBody = UserRequestData.builder()
             .name(faker.name().fullName())
@@ -323,8 +383,8 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getAddUserMissingFieldsData")
-    public void testAddUserMissingFields(
+    @Test(dataProvider = "getPostUserMissingFieldsData")
+    public void testPostUserMissingFields(
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
@@ -352,7 +412,7 @@ public class GoRestUsersTest extends BaseTest {
     }
 
     @Test
-    public void testAddUserInvalidRequestBody() {
+    public void testPostUserInvalidRequestBody() {
         given()
             .body("{}'")
             .when()
@@ -363,7 +423,7 @@ public class GoRestUsersTest extends BaseTest {
 
     @Test(dataProvider = "getGetUserData")
     public void testGetUser(UserRequestData requestBody) {
-        ResponseBody<UserResponseData> expectedResponseBody = given()
+        ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
             .post("/public-api/users")
@@ -372,9 +432,13 @@ public class GoRestUsersTest extends BaseTest {
             .extract()
             .as(new TypeRef<>(){});
 
-        Long id = expectedResponseBody.getData().getId();
+        Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
-        expectedResponseBody.setCode(200);
+        ResponseBody<UserResponseData> expectedResponseBody = ResponseBody.<UserResponseData>builder()
+            .code(200)
+            .meta(responseBody.getMeta())
+            .data(responseBody.getData())
+            .build();
         ResponseBody<UserResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .when()
@@ -404,8 +468,15 @@ public class GoRestUsersTest extends BaseTest {
         });
     }
 
-    @Test(dataProvider = "getGetUserData")
-    public void testGetDeletedUser(UserRequestData requestBody) {
+    @Test
+    public void testGetDeletedUser() {
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(faker.internet().emailAddress())
+            .status(Status.ACTIVE)
+            .build();
+
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
@@ -460,10 +531,28 @@ public class GoRestUsersTest extends BaseTest {
 
     @Test
     public void testGetAllUsersFirstPage() {
+        for (int i = 0; i < 20; i++) {
+            UserRequestData requestBody = UserRequestData.builder()
+                .name(faker.name().fullName())
+                .gender(Gender.FEMALE)
+                .email(faker.internet().emailAddress())
+                .status(Status.ACTIVE)
+                .build();
+            ResponseBody<UserResponseData> responseBody = given()
+                .body(requestBody)
+                .when()
+                .post("/public-api/users")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>(){});
+            allCreatedUsers.add(responseBody.getData().getId());
+        }
+
         List<UserResponseData> expectedUsers = new ArrayList<>();
         int id = 1;
         while (expectedUsers.size() < 20) {
-            ResponseBody<UserResponseData> responseBody = given()
+            ResponseBody<?> responseBody = given()
                 .pathParam("id", id)
                 .when()
                 .get("/public-api/users/{id}")
@@ -473,7 +562,7 @@ public class GoRestUsersTest extends BaseTest {
                 .as(new TypeRef<>(){});
             id++;
             if (responseBody.getCode() == 200) {
-                expectedUsers.add(responseBody.getData());
+                expectedUsers.add(new ObjectMapper().convertValue(responseBody.getData(), UserResponseData.class));
             }
         }
 
@@ -509,7 +598,305 @@ public class GoRestUsersTest extends BaseTest {
                   })
                   .isEqualTo(true);
         });
+    }
 
+    @Test(dataProvider = "getPutUserData")
+    public void testPutUser(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
+        ResponseBody<UserResponseData> postResponseBody = given()
+            .body(UserRequestData.builder()
+                .name(faker.name().fullName())
+                .gender(Gender.MALE)
+                .email(faker.internet().emailAddress())
+                .status(Status.INACTIVE)
+                .build()
+            )
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        Long id = postResponseBody.getData().getId();
+        allCreatedUsers.add(id);
+
+        ResponseBody<UserResponseData> actualResponseBody = given()
+            .pathParam("id", id)
+            .body(requestBody)
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getId())
+                  .isNotNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getCreatedAt())
+                  .isNotNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getUpdatedAt())
+                  .isNotNull();
+        });
+    }
+
+    @Test(dataProvider = "getPostOrPutUserNegativeData")
+    public void testPutUserNegative(
+        UserRequestData requestBody,
+        ResponseBody<List<ErrorResponseData>> expectedResponseBody
+    ) {
+        ResponseBody<UserResponseData> postResponseBody = given()
+            .body(UserRequestData.builder()
+                .name(faker.name().fullName())
+                .gender(Gender.MALE)
+                .email(faker.internet().emailAddress())
+                .status(Status.INACTIVE)
+                .build()
+            )
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        Long id = postResponseBody.getData().getId();
+        allCreatedUsers.add(id);
+
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
+            .pathParam("id", id)
+            .body(requestBody)
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .ignoringCollectionOrder()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
+        });
+    }
+
+    @Test(dataProvider = "getPutUserMissingFieldsData")
+    public void testPutUserMissingFields(
+        UserRequestData postRequestBody,
+        UserRequestData requestBody,
+        ResponseBody<UserResponseData> expectedResponseBody
+    ) {
+        ResponseBody<UserResponseData> postResponseBody = given()
+            .body(postRequestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        Long id = postResponseBody.getData().getId();
+        allCreatedUsers.add(id);
+
+        ResponseBody<UserResponseData> actualResponseBody = given()
+            .pathParam("id", id)
+            .body(requestBody, new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            ))
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getId())
+                  .isNotNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getCreatedAt())
+                  .isNotNull();
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getData().getUpdatedAt())
+                  .isNotNull();
+        });
+    }
+
+    @Test
+    public void testPutDeletedUser() {
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(faker.internet().emailAddress())
+            .status(Status.ACTIVE)
+            .build();
+
+        ResponseBody<UserResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        Long id = responseBody.getData().getId();
+        given()
+            .pathParam("id", id)
+            .when()
+            .delete("/public-api/users/{id}");
+
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
+            .pathParam("id", id)
+            .body(requestBody)
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
+             .code(404)
+             .meta(null)
+             .data(new ErrorMessageResponseData("Resource not found"))
+             .build();
+
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+    }
+
+    @Test
+    public void testPutUserEmailAlreadyExists() {
+        Object[][] data = new Object[][] {
+            {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
+            {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
+        };
+        List<UserResponseData> responseBodies = Arrays
+            .stream(data)
+            .map(e -> {
+                UserRequestData requestBody = UserRequestData.builder()
+                    .name((String) e[0])
+                    .gender((Gender) e[1])
+                    .email((String) e[2])
+                    .status((Status) e[3])
+                    .build();
+                ResponseBody<UserResponseData> responseBody = given()
+                    .body(requestBody)
+                    .when()
+                    .post("/public-api/users")
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .as(new TypeRef<>(){});
+                Long id = responseBody.getData().getId();
+                allCreatedUsers.add(id);
+                return responseBody.getData();
+            })
+            .collect(Collectors.toList());
+
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
+            .pathParam("id", responseBodies.get(1).getId())
+            .body(
+                UserRequestData.builder()
+                    .email(responseBodies.get(0).getEmail())
+                    .build(),
+                new Jackson2Mapper(
+                    (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+                )
+            )
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
+            .code(422)
+            .meta(null)
+            .data(List.of(
+                new ErrorResponseData("email", "has already been taken")
+            ))
+            .build();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualResponseBody)
+                  .usingRecursiveComparison()
+                  .ignoringExpectedNullFields()
+                  .ignoringCollectionOrder()
+                  .isEqualTo(expectedResponseBody);
+            softly.assertThat(actualResponseBody)
+                  .extracting(ResponseBody::getMeta)
+                  .isNull();
+        });
+    }
+
+    @Test
+    public void testPutUserInvalidRequestBody() {
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(faker.internet().emailAddress())
+            .status(Status.ACTIVE)
+            .build();
+
+        ResponseBody<UserResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        Long id = responseBody.getData().getId();
+        allCreatedUsers.add(id);
+
+        given()
+            .pathParam("id", id)
+            .body("{}'")
+            .when()
+            .put("/public-api/users/{id}")
+            .then()
+            .statusCode(500);
+    }
+
+    @Test
+    public void testPutUserInvalidInput() {
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
+            .body("{}")
+            .when()
+            .put("/public-api/users/qwerty")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
+            .code(404)
+            .meta(null)
+            .data(new ErrorMessageResponseData("Resource not found"))
+            .build();
+
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
     }
 
 }
