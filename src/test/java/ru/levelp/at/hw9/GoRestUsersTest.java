@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -885,6 +886,123 @@ public class GoRestUsersTest extends BaseTest {
             .body("{}")
             .when()
             .put("/public-api/users/qwerty")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
+            .code(404)
+            .meta(null)
+            .data(new ErrorMessageResponseData("Resource not found"))
+            .build();
+
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+    }
+
+    @Test
+    public void testDeleteUser() {
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(faker.internet().emailAddress())
+            .status(Status.ACTIVE)
+            .build();
+        ResponseBody<UserResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        Long id = responseBody.getData().getId();
+        ResponseBody<UserResponseData> actualDeleteResponseBody = given()
+            .pathParam("id", id)
+            .when()
+            .delete("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<UserResponseData> expectedDeleteResponseBody = ResponseBody.<UserResponseData>builder()
+            .code(204)
+            .meta(null)
+            .data(null)
+            .build();
+
+        ResponseBody<ErrorMessageResponseData> actualGetResponseBody = given()
+            .pathParam("id", id)
+            .when()
+            .get("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<ErrorMessageResponseData> expectedGetResponseBody
+            = ResponseBody.<ErrorMessageResponseData>builder()
+                          .code(404)
+                          .meta(null)
+                          .data(new ErrorMessageResponseData("Resource not found"))
+                          .build();
+
+        SoftAssertions.assertSoftly(
+            softly -> {
+                softly.assertThat(actualDeleteResponseBody).isEqualTo(expectedDeleteResponseBody);
+                softly.assertThat(actualGetResponseBody).isEqualTo(expectedGetResponseBody);
+            }
+        );
+    }
+
+    @Test
+    public void testDeleteDeletedUser() {
+        UserRequestData requestBody = UserRequestData.builder()
+            .name(faker.name().fullName())
+            .gender(Gender.FEMALE)
+            .email(faker.internet().emailAddress())
+            .status(Status.ACTIVE)
+            .build();
+        ResponseBody<UserResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post("/public-api/users")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        Long id = responseBody.getData().getId();
+        given()
+            .pathParam("id", id)
+            .when()
+            .delete("/public-api/users/{id}");
+
+        ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody = given()
+            .pathParam("id", id)
+            .when()
+            .delete("/public-api/users/{id}")
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<ErrorMessageResponseData> expectedDeleteResponseBody
+            = ResponseBody.<ErrorMessageResponseData>builder()
+                          .code(404)
+                          .meta(null)
+                          .data(new ErrorMessageResponseData("Resource not found"))
+                          .build();
+
+        SoftAssertions.assertSoftly(
+            softly -> softly.assertThat(actualDeleteResponseBody).isEqualTo(expectedDeleteResponseBody)
+        );
+    }
+
+    @Test
+    public void testDeleteUserInvalidInput() {
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
+            .when()
+            .delete("/public-api/users/qwerty")
             .then()
             .statusCode(200)
             .extract()
