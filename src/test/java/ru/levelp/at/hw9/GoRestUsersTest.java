@@ -44,15 +44,15 @@ public class GoRestUsersTest extends BaseTest {
 
     @DataProvider
     private Object[][] getPostUserObjectData() {
-        return getUserObjectData(201);
+        return getUserObjectData();
     }
 
     @DataProvider
     private Object[][] getPutUserObjectData() {
-        return getUserObjectData(200);
+        return getUserObjectData();
     }
 
-    private Object[][] getUserObjectData(int statusCode) {
+    private Object[][] getUserObjectData() {
         Object[][] data = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
