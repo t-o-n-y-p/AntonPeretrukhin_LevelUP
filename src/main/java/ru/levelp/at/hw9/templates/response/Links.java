@@ -13,9 +13,10 @@ import lombok.ToString;
 @ToString
 @Getter
 @Builder
-public class ResponseBody<T> {
+public class Links {
 
-    private Metadata meta;
-    private T data;
+    private String previous;
+    private String current;
+    private String next;
 
 }

@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum Status {
 
-    ACTIVE("Active"),
-    INACTIVE("Inactive"),
+    ACTIVE("active"),
+    INACTIVE("inactive"),
     INVALID("qwerty"),
     BLANK("    "),
     EMPTY("");

@@ -22,9 +22,5 @@ public class CommentResponseData {
     private String name;
     private String email;
     private String body;
-    @JsonProperty("created_at")
-    private String createdAt;
-    @JsonProperty("updated_at")
-    private String updatedAt;
 
 }

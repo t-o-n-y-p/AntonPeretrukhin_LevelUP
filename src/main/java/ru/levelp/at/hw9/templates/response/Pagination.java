@@ -19,5 +19,6 @@ public class Pagination {
     private Integer pages;
     private Integer page;
     private Integer limit;
+    private Links links;
 
 }

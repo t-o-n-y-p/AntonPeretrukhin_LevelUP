@@ -3,10 +3,12 @@ package ru.levelp.at.hw9;
 import static io.restassured.RestAssured.given;
 
 import io.restassured.common.mapper.TypeRef;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.assertj.core.api.SoftAssertions;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import ru.levelp.at.hw9.templates.Gender;
@@ -20,14 +22,15 @@ import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 
 public class GoRestPostsTest extends BaseTest {
 
-    @DataProvider
-    private Object[] getGetPostObjectData() {
+    private List<Long> userIds;
+
+    @BeforeClass
+    public void beforeClass() {
         Object[][] userData = new Object[][] {
             {faker.name().fullName(), Gender.MALE, faker.internet().emailAddress(), Status.ACTIVE},
             {faker.name().fullName(), Gender.FEMALE, faker.internet().emailAddress(), Status.INACTIVE}
         };
-        List<Long> userIds = Arrays
-            .stream(userData)
+        userIds = Arrays.stream(userData)
             .map(e -> {
                 UserRequestData requestBody = UserRequestData.builder()
                     .name((String) e[0])
@@ -38,9 +41,9 @@ public class GoRestPostsTest extends BaseTest {
                 ResponseBody<UserResponseData> responseBody = given()
                     .body(requestBody)
                     .when()
-                    .post("/public-api/users")
+                    .post(USERS_API_URL)
                     .then()
-                    .statusCode(200)
+                    .statusCode(201)
                     .extract()
                     .as(new TypeRef<>(){});
                 Long id = responseBody.getData().getId();
@@ -48,7 +51,10 @@ public class GoRestPostsTest extends BaseTest {
                 return id;
             })
             .collect(Collectors.toList());
+    }
 
+    @DataProvider
+    private Object[] getGetPostObjectData() {
         Object[][] postData = new Object[][] {
             {userIds.get(0), faker.animal().name(), faker.yoda().quote()},
             {userIds.get(1), faker.animal().name(), faker.yoda().quote()}
@@ -72,23 +78,22 @@ public class GoRestPostsTest extends BaseTest {
         ResponseBody<PostResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/posts")
+            .post(POSTS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
         Long id = responseBody.getData().getId();
         allCreatedPosts.add(id);
         ResponseBody<PostResponseData> expectedResponseBody = ResponseBody.<PostResponseData>builder()
-            .code(200)
             .meta(responseBody.getMeta())
             .data(responseBody.getData())
             .build();
         ResponseBody<PostResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .when()
-            .get("/public-api/posts/{id}")
+            .get(POST_BY_ID_API_URL)
             .then()
             .statusCode(200)
             .extract()
@@ -105,66 +110,43 @@ public class GoRestPostsTest extends BaseTest {
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getId())
                   .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getCreatedAt())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getUpdatedAt())
-                  .isNotNull();
         });
     }
 
     @Test
     public void testGetDeletedPostObject() {
-        UserRequestData userRequestBody = UserRequestData.builder()
-            .name(faker.name().fullName())
-            .gender(Gender.FEMALE)
-            .email(faker.internet().emailAddress())
-            .status(Status.ACTIVE)
-            .build();
-        ResponseBody<UserResponseData> userResponseBody = given()
-            .body(userRequestBody)
-            .when()
-            .post("/public-api/users")
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-        Long id = userResponseBody.getData().getId();
-        allCreatedUsers.add(id);
         PostRequestData requestBody = PostRequestData.builder()
-            .userId(id)
+            .userId(userIds.get(0))
             .title(faker.animal().name())
             .body(faker.yoda().quote())
             .build();
         ResponseBody<PostResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/posts")
+            .post(POSTS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
-        id = responseBody.getData().getId();
+        Long id = responseBody.getData().getId();
         allCreatedPosts.add(id);
 
         given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/posts/{id}");
+            .delete(POST_BY_ID_API_URL);
 
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .when()
-            .get("/public-api/posts/{id}")
+            .get(POST_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();
@@ -176,19 +158,61 @@ public class GoRestPostsTest extends BaseTest {
     public void testGetPostObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .when()
-            .get("/public-api/posts/qwerty")
+            .get(POST_BY_ID_INVALID_INPUT_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();
 
         SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+    }
+
+    @Test
+    public void testDeletePostObject() {
+        PostRequestData requestBody = PostRequestData.builder()
+            .userId(userIds.get(0))
+            .title(faker.animal().name())
+            .body(faker.yoda().quote())
+            .build();
+        ResponseBody<PostResponseData> responseBody = given()
+            .body(requestBody)
+            .when()
+            .post(POSTS_API_URL)
+            .then()
+            .statusCode(201)
+            .extract()
+            .as(new TypeRef<>(){});
+
+        Long id = responseBody.getData().getId();
+        given()
+            .pathParam("id", id)
+            .when()
+            .delete(POST_BY_ID_API_URL)
+            .then()
+            .statusCode(204);
+
+        ResponseBody<ErrorMessageResponseData> actualGetResponseBody = given()
+            .pathParam("id", id)
+            .when()
+            .get(POST_BY_ID_API_URL)
+            .then()
+            .statusCode(404)
+            .extract()
+            .as(new TypeRef<>(){});
+        ResponseBody<ErrorMessageResponseData> expectedGetResponseBody
+            = ResponseBody.<ErrorMessageResponseData>builder()
+                          .meta(null)
+                          .data(new ErrorMessageResponseData("Resource not found"))
+                          .build();
+
+        SoftAssertions.assertSoftly(
+            softly -> softly.assertThat(actualGetResponseBody).isEqualTo(expectedGetResponseBody)
+        );
     }
 
 }

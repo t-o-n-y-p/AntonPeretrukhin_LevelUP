@@ -23,9 +23,5 @@ public class UserResponseData {
     private Gender gender;
     private String email;
     private Status status;
-    @JsonProperty("created_at")
-    private String createdAt;
-    @JsonProperty("updated_at")
-    private String updatedAt;
 
 }

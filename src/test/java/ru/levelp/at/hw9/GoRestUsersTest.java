@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.internal.mapping.Jackson2Mapper;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +16,7 @@ import org.testng.annotations.Test;
 import ru.levelp.at.hw9.templates.Gender;
 import ru.levelp.at.hw9.templates.Status;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
+import ru.levelp.at.hw9.templates.response.Links;
 import ru.levelp.at.hw9.templates.response.Metadata;
 import ru.levelp.at.hw9.templates.response.Pagination;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
@@ -66,7 +66,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status((Status) e[3])
                     .build(),
                 ResponseBody.<UserResponseData>builder()
-                    .code(statusCode)
                     .meta(null)
                     .data(
                         UserResponseData.builder()
@@ -92,7 +91,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.BLANK)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("name", "can't be blank"),
@@ -110,7 +108,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.INVALID)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("name", "can't be blank"),
@@ -128,7 +125,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(null)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("name", "is too long (maximum is 200 characters)"),
@@ -146,7 +142,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.EMPTY)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("name", "can't be blank"),
@@ -171,7 +166,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.ACTIVE)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("name", "can't be blank")
@@ -185,7 +179,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.ACTIVE)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("gender", "can't be blank")
@@ -199,7 +192,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status(Status.ACTIVE)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("email", "can't be blank")
@@ -213,7 +205,6 @@ public class GoRestUsersTest extends BaseTest {
                     .email(email)
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
-                    .code(422)
                     .meta(null)
                     .data(List.of(
                         new ErrorResponseData("status", "can't be blank")
@@ -252,7 +243,6 @@ public class GoRestUsersTest extends BaseTest {
                     .status((Status) putData[i][3])
                     .build(),
                 ResponseBody.<UserResponseData>builder()
-                    .code(200)
                     .meta(null)
                     .data(
                         UserResponseData.builder()
@@ -277,9 +267,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> actualResponseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -296,12 +286,6 @@ public class GoRestUsersTest extends BaseTest {
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getId())
                   .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getCreatedAt())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getUpdatedAt())
-                  .isNotNull();
         });
     }
 
@@ -313,9 +297,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(422)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -343,9 +327,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
         allCreatedUsers.add(responseBody.getData().getId());
@@ -359,13 +343,12 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(422)
             .extract()
             .as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
-            .code(422)
             .meta(null)
             .data(List.of(
                 new ErrorResponseData("email", "has already been taken")
@@ -393,9 +376,9 @@ public class GoRestUsersTest extends BaseTest {
                 (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
             ))
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(422)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -416,7 +399,7 @@ public class GoRestUsersTest extends BaseTest {
         given()
             .body("{}'")
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
             .statusCode(500);
     }
@@ -426,23 +409,22 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
         ResponseBody<UserResponseData> expectedResponseBody = ResponseBody.<UserResponseData>builder()
-            .code(200)
             .meta(responseBody.getMeta())
             .data(responseBody.getData())
             .build();
         ResponseBody<UserResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .when()
-            .get("/public-api/users/{id}")
+            .get(USER_BY_ID_API_URL)
             .then()
             .statusCode(200)
             .extract()
@@ -459,12 +441,6 @@ public class GoRestUsersTest extends BaseTest {
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getId())
                   .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getCreatedAt())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getUpdatedAt())
-                  .isNotNull();
         });
     }
 
@@ -480,9 +456,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -490,19 +466,18 @@ public class GoRestUsersTest extends BaseTest {
         given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/users/{id}");
+            .delete(USER_BY_ID_API_URL);
 
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .when()
-            .get("/public-api/users/{id}")
+            .get(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();
@@ -514,14 +489,13 @@ public class GoRestUsersTest extends BaseTest {
     public void testGetUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .when()
-            .get("/public-api/users/qwerty")
+            .get(USER_BY_ID_INVALID_INPUT_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();
@@ -541,42 +515,52 @@ public class GoRestUsersTest extends BaseTest {
             ResponseBody<UserResponseData> responseBody = given()
                 .body(requestBody)
                 .when()
-                .post("/public-api/users")
+                .post(USERS_API_URL)
                 .then()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(new TypeRef<>(){});
             allCreatedUsers.add(responseBody.getData().getId());
         }
 
-        List<UserResponseData> expectedUsers = new ArrayList<>();
-        int id = 1;
-        while (expectedUsers.size() < 20) {
-            ResponseBody<?> responseBody = given()
-                .pathParam("id", id)
-                .when()
-                .get("/public-api/users/{id}")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(new TypeRef<>(){});
-            id++;
-            if (responseBody.getCode() == 200) {
-                expectedUsers.add(new ObjectMapper().convertValue(responseBody.getData(), UserResponseData.class));
-            }
-        }
-
         ResponseBody<List<UserResponseData>> actualResponseBody = given()
             .when()
-            .get("/public-api/users")
+            .get(USERS_API_URL)
             .then()
             .statusCode(200)
             .extract()
             .as(new TypeRef<>(){});
+        List<Long> userIds = actualResponseBody.getData().stream()
+            .map(UserResponseData::getId)
+            .collect(Collectors.toList());
+
         ResponseBody<List<UserResponseData>> expectedResponseBody = ResponseBody.<List<UserResponseData>>builder()
-            .code(200)
-            .meta(new Metadata(Pagination.builder().page(1).limit(20).build()))
-            .data(expectedUsers)
+            .meta(new Metadata(
+                Pagination
+                    .builder()
+                    .page(1).limit(20)
+                    .links(Links
+                        .builder()
+                        .current(String.format(BASE_URL + USERS_PAGE_API_URL, 1))
+                        .next(String.format(BASE_URL + USERS_PAGE_API_URL, 2))
+                        .build()
+                    )
+                    .build()
+            ))
+            .data(userIds.stream()
+                    .map(id -> {
+                        ResponseBody<UserResponseData> responseBody = given()
+                            .pathParam("id", id)
+                            .when()
+                            .get(USER_BY_ID_API_URL)
+                            .then()
+                            .statusCode(200)
+                            .extract()
+                            .as(new TypeRef<>(){});
+                        return responseBody.getData();
+                    })
+                        .collect(Collectors.toList())
+            )
             .build();
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(actualResponseBody)
@@ -597,6 +581,9 @@ public class GoRestUsersTest extends BaseTest {
                           && pagination.getTotal() > (pagination.getPages() - 1) * pagination.getLimit();
                   })
                   .isEqualTo(true);
+            softly.assertThat(actualResponseBody)
+                  .extracting(r -> r.getMeta().getPagination().getLinks().getPrevious())
+                  .isNull();
         });
     }
 
@@ -611,9 +598,9 @@ public class GoRestUsersTest extends BaseTest {
                 .build()
             )
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
@@ -623,7 +610,7 @@ public class GoRestUsersTest extends BaseTest {
             .pathParam("id", id)
             .body(requestBody)
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
             .statusCode(200)
             .extract()
@@ -639,12 +626,6 @@ public class GoRestUsersTest extends BaseTest {
                   .isNull();
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getId())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getCreatedAt())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getUpdatedAt())
                   .isNotNull();
         });
     }
@@ -663,9 +644,9 @@ public class GoRestUsersTest extends BaseTest {
                 .build()
             )
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
@@ -675,9 +656,9 @@ public class GoRestUsersTest extends BaseTest {
             .pathParam("id", id)
             .body(requestBody)
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(422)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -702,9 +683,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> postResponseBody = given()
             .body(postRequestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
@@ -716,7 +697,7 @@ public class GoRestUsersTest extends BaseTest {
                 (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
             ))
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
             .statusCode(200)
             .extract()
@@ -733,12 +714,6 @@ public class GoRestUsersTest extends BaseTest {
             softly.assertThat(actualResponseBody)
                   .extracting(r -> r.getData().getId())
                   .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getCreatedAt())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getUpdatedAt())
-                  .isNotNull();
         });
     }
 
@@ -754,9 +729,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -764,20 +739,19 @@ public class GoRestUsersTest extends BaseTest {
         given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/users/{id}");
+            .delete(USER_BY_ID_API_URL);
 
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .pathParam("id", id)
             .body(requestBody)
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-             .code(404)
              .meta(null)
              .data(new ErrorMessageResponseData("Resource not found"))
              .build();
@@ -803,9 +777,9 @@ public class GoRestUsersTest extends BaseTest {
                 ResponseBody<UserResponseData> responseBody = given()
                     .body(requestBody)
                     .when()
-                    .post("/public-api/users")
+                    .post(USERS_API_URL)
                     .then()
-                    .statusCode(200)
+                    .statusCode(201)
                     .extract()
                     .as(new TypeRef<>(){});
                 Long id = responseBody.getData().getId();
@@ -825,13 +799,12 @@ public class GoRestUsersTest extends BaseTest {
                 )
             )
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(422)
             .extract()
             .as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
-            .code(422)
             .meta(null)
             .data(List.of(
                 new ErrorResponseData("email", "has already been taken")
@@ -861,9 +834,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -874,7 +847,7 @@ public class GoRestUsersTest extends BaseTest {
             .pathParam("id", id)
             .body("{}'")
             .when()
-            .put("/public-api/users/{id}")
+            .put(USER_BY_ID_API_URL)
             .then()
             .statusCode(500);
     }
@@ -884,14 +857,13 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .body("{}")
             .when()
-            .put("/public-api/users/qwerty")
+            .put(USER_BY_ID_INVALID_INPUT_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();
@@ -910,47 +882,36 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
         Long id = responseBody.getData().getId();
-        ResponseBody<UserResponseData> actualDeleteResponseBody = given()
+        given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/users/{id}")
+            .delete(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-        ResponseBody<UserResponseData> expectedDeleteResponseBody = ResponseBody.<UserResponseData>builder()
-            .code(204)
-            .meta(null)
-            .data(null)
-            .build();
+            .statusCode(204);
 
         ResponseBody<ErrorMessageResponseData> actualGetResponseBody = given()
             .pathParam("id", id)
             .when()
-            .get("/public-api/users/{id}")
+            .get(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
         ResponseBody<ErrorMessageResponseData> expectedGetResponseBody
             = ResponseBody.<ErrorMessageResponseData>builder()
-                          .code(404)
                           .meta(null)
                           .data(new ErrorMessageResponseData("Resource not found"))
                           .build();
 
         SoftAssertions.assertSoftly(
-            softly -> {
-                softly.assertThat(actualDeleteResponseBody).isEqualTo(expectedDeleteResponseBody);
-                softly.assertThat(actualGetResponseBody).isEqualTo(expectedGetResponseBody);
-            }
+            softly -> softly.assertThat(actualGetResponseBody).isEqualTo(expectedGetResponseBody)
         );
     }
 
@@ -965,9 +926,9 @@ public class GoRestUsersTest extends BaseTest {
         ResponseBody<UserResponseData> responseBody = given()
             .body(requestBody)
             .when()
-            .post("/public-api/users")
+            .post(USERS_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(201)
             .extract()
             .as(new TypeRef<>(){});
 
@@ -975,19 +936,18 @@ public class GoRestUsersTest extends BaseTest {
         given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/users/{id}");
+            .delete(USER_BY_ID_API_URL);
 
         ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody = given()
             .pathParam("id", id)
             .when()
-            .delete("/public-api/users/{id}")
+            .delete(USER_BY_ID_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
         ResponseBody<ErrorMessageResponseData> expectedDeleteResponseBody
             = ResponseBody.<ErrorMessageResponseData>builder()
-                          .code(404)
                           .meta(null)
                           .data(new ErrorMessageResponseData("Resource not found"))
                           .build();
@@ -1001,14 +961,13 @@ public class GoRestUsersTest extends BaseTest {
     public void testDeleteUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
             .when()
-            .delete("/public-api/users/qwerty")
+            .delete(USER_BY_ID_INVALID_INPUT_API_URL)
             .then()
-            .statusCode(200)
+            .statusCode(404)
             .extract()
             .as(new TypeRef<>(){});
 
         ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .code(404)
             .meta(null)
             .data(new ErrorMessageResponseData("Resource not found"))
             .build();

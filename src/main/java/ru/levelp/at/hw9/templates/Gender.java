@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum Gender {
 
-    MALE("Male"),
-    FEMALE("Female"),
+    MALE("male"),
+    FEMALE("female"),
     INVALID("qwerty"),
     BLANK("    "),
     EMPTY("");
