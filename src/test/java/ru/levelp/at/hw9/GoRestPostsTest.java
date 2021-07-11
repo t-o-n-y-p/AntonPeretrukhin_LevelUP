@@ -61,13 +61,12 @@ public class GoRestPostsTest extends BaseTest {
             {userIds.get(1), faker.animal().name(), faker.yoda().quote()}
         };
         return Arrays.stream(postData)
-                     .map(e -> PostRequestData
-                         .builder()
-                         .userId((Long) e[0])
-                         .title((String) e[1])
-                         .body((String) e[2])
-                         .build()
-                     ).toArray();
+            .map(e -> PostRequestData.builder()
+                .userId((Long) e[0])
+                .title((String) e[1])
+                .body((String) e[2])
+                .build()
+            ).toArray();
     }
 
     @DataProvider
@@ -86,24 +85,24 @@ public class GoRestPostsTest extends BaseTest {
             {userIds.get(1), faker.animal().name(), faker.yoda().quote()}
         };
         return Arrays.stream(data)
-                     .map(e -> new Object[]{
-                         PostRequestData.builder()
-                             .userId((Long) e[0])
-                             .title((String) e[1])
-                             .body((String) e[2])
-                             .build(),
-                         ResponseBody.<PostResponseData>builder()
-                             .meta(null)
-                             .data(
-                                 PostResponseData.builder()
-                                     .userId((Long) e[0])
-                                     .title((String) e[1])
-                                     .body((String) e[2])
-                                     .build()
-                             )
-                             .build()
-                     })
-                     .toArray(Object[][]::new);
+            .map(e -> new Object[]{
+                PostRequestData.builder()
+                    .userId((Long) e[0])
+                    .title((String) e[1])
+                    .body((String) e[2])
+                    .build(),
+                ResponseBody.<PostResponseData>builder()
+                    .meta(null)
+                    .data(
+                        PostResponseData.builder()
+                            .userId((Long) e[0])
+                            .title((String) e[1])
+                            .body((String) e[2])
+                            .build()
+                    )
+                    .build()
+            })
+            .toArray(Object[][]::new);
     }
 
     @DataProvider
@@ -140,7 +139,7 @@ public class GoRestPostsTest extends BaseTest {
             },
             {
                 PostRequestData.builder()
-                    .userId(userIds.get(0))
+                    .userId(userIds.get(1))
                     .title("0".repeat(10000))
                     .body(null)
                     .build(),
@@ -199,7 +198,7 @@ public class GoRestPostsTest extends BaseTest {
             },
             {
                 PostRequestData.builder()
-                    .userId(userIds.get(0))
+                    .userId(userIds.get(1))
                     .title(faker.animal().name())
                     .build(),
                 ResponseBody.<List<ErrorResponseData>>builder()
