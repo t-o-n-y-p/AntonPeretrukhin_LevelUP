@@ -7,16 +7,16 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @ToString
 @Getter
-@Builder
-public class PostResponseData {
+@SuperBuilder
+public class PostResponseData extends ObjectResponseData {
 
-    private Long id;
     @JsonProperty("user_id")
     private Long userId;
     private String title;

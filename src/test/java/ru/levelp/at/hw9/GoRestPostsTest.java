@@ -39,20 +39,14 @@ public class GoRestPostsTest extends BaseTest {
         };
         userIds = Arrays.stream(userData)
             .map(e -> {
-                UserRequestData requestBody = UserRequestData.builder()
-                    .name((String) e[0])
-                    .gender((Gender) e[1])
-                    .email((String) e[2])
-                    .status((Status) e[3])
-                    .build();
-                ResponseBody<UserResponseData> responseBody = given()
-                    .body(requestBody)
-                    .when()
-                    .post(USERS_API_URL)
-                    .then()
-                    .statusCode(201)
-                    .extract()
-                    .as(new TypeRef<>(){});
+                ResponseBody<UserResponseData> responseBody = actionStep.postObject(
+                    UserRequestData.builder()
+                        .name((String) e[0])
+                        .gender((Gender) e[1])
+                        .email((String) e[2])
+                        .status((Status) e[3])
+                        .build()
+                );
                 Long id = responseBody.getData().getId();
                 allCreatedUsers.add(id);
                 return id;
@@ -265,29 +259,9 @@ public class GoRestPostsTest extends BaseTest {
 
     @Test(dataProvider = "getPostPostObjectData")
     public void testPostPostObject(PostRequestData requestBody, ResponseBody<PostResponseData> expectedResponseBody) {
-        ResponseBody<PostResponseData> actualResponseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
+        ResponseBody<PostResponseData> actualResponseBody = actionStep.postObject(requestBody);
         allCreatedPosts.add(actualResponseBody.getData().getId());
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getId())
-                  .isNotNull();
-        });
+        assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
     @Test(dataProvider = "getPostOrPutPostObjectNegativeData")
@@ -295,81 +269,37 @@ public class GoRestPostsTest extends BaseTest {
         PostRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(422)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-        });
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(requestBody);
+        assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
     @Test
     public void testPostPostObjectDeletedUser() {
-        UserRequestData userRequestBody = UserRequestData.builder()
-            .name(faker.name().fullName())
-            .gender(Gender.FEMALE)
-            .email(faker.internet().emailAddress())
-            .status(Status.ACTIVE)
-            .build();
-        ResponseBody<UserResponseData> userResponseBody = given()
-            .body(userRequestBody)
-            .when()
-            .post(USERS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        ResponseBody<UserResponseData> userResponseBody = actionStep.postObject(
+            UserRequestData.builder()
+                .name(faker.name().fullName())
+                .gender(Gender.FEMALE)
+                .email(faker.internet().emailAddress())
+                .status(Status.ACTIVE)
+                .build()
+        );
         Long userId = userResponseBody.getData().getId();
-        allCreatedUsers.add(userId);
+        actionStep.deleteObject(userId, UserRequestData.class);
 
-        given()
-            .pathParam("id", userId)
-            .when()
-            .delete(USER_BY_ID_API_URL);
-
-        PostRequestData requestBody = PostRequestData
-            .builder()
-            .userId(userId)
-            .title(faker.animal().name())
-            .body(faker.yoda().quote())
-            .build();
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(422)
-            .extract()
-            .as(new TypeRef<>(){});
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(
+            PostRequestData.builder()
+                .userId(userId)
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
+        );
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
             .meta(null)
             .data(List.of(
                 new ErrorResponseData("user", "must exist")
             ))
             .build();
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-        });
+        assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
     @Test(dataProvider = "getPostPostObjectMissingFieldsData")
@@ -377,262 +307,84 @@ public class GoRestPostsTest extends BaseTest {
         PostRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
-            .body(requestBody, new Jackson2Mapper(
-                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
-            ))
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(422)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-        });
+        ResponseBody<List<ErrorResponseData>> actualResponseBody
+            = actionStep.postObjectWithErrorsWithoutNullValues(requestBody);
+        assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
     @Test
     public void testPostPostObjectInvalidRequestBody() {
-        given()
-            .body("{}'")
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(500);
+        actionStep.postObjectInvalidRequestBody(PostRequestData.class);
     }
 
     @Test(dataProvider = "getGetPostObjectData")
     public void testGetPostObject(PostRequestData requestBody) {
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(requestBody);
         Long id = responseBody.getData().getId();
         allCreatedPosts.add(id);
         ResponseBody<PostResponseData> expectedResponseBody = ResponseBody.<PostResponseData>builder()
             .meta(responseBody.getMeta())
             .data(responseBody.getData())
             .build();
-        ResponseBody<PostResponseData> actualResponseBody = given()
-            .pathParam("id", id)
-            .when()
-            .get(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getId())
-                  .isNotNull();
-        });
+        ResponseBody<PostResponseData> actualResponseBody = actionStep.getObject(id, PostRequestData.class);
+        assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
     @Test
     public void testGetDeletedPostObject() {
-        PostRequestData requestBody = PostRequestData.builder()
-            .userId(userIds.get(0))
-            .title(faker.animal().name())
-            .body(faker.yoda().quote())
-            .build();
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+            PostRequestData.builder()
+                .userId(userIds.get(0))
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
+        );
         Long id = responseBody.getData().getId();
-        allCreatedPosts.add(id);
+        actionStep.deleteObject(id, PostRequestData.class);
 
-        given()
-            .pathParam("id", id)
-            .when()
-            .delete(POST_BY_ID_API_URL);
-
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
-            .pathParam("id", id)
-            .when()
-            .get(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .meta(null)
-            .data(new ErrorMessageResponseData("Resource not found"))
-            .build();
-
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+        ResponseBody<ErrorMessageResponseData> actualResponseBody
+            = actionStep.getObjectWithError(id, PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testGetPostObjectInvalidInput() {
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
-            .when()
-            .get(POST_BY_ID_INVALID_INPUT_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .meta(null)
-            .data(new ErrorMessageResponseData("Resource not found"))
-            .build();
-
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+        ResponseBody<ErrorMessageResponseData> actualResponseBody
+            = actionStep.getObjectWithInvalidInput(PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testGetAllPostObjectsFirstPage() {
         for (int i = 0; i < 20; i++) {
-            PostRequestData requestBody = PostRequestData
-                .builder()
-                .userId(userIds.get(i % 2))
-                .title(faker.animal().name())
-                .body(faker.yoda().quote())
-                .build();
-            ResponseBody<PostResponseData> responseBody = given()
-                .body(requestBody)
-                .when()
-                .post(POSTS_API_URL)
-                .then()
-                .statusCode(201)
-                .extract()
-                .as(new TypeRef<>(){});
+            ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+                PostRequestData.builder()
+                    .userId(userIds.get(i % 2))
+                    .title(faker.animal().name())
+                    .body(faker.yoda().quote())
+                    .build()
+            );
             allCreatedPosts.add(responseBody.getData().getId());
         }
 
-        ResponseBody<List<PostResponseData>> actualResponseBody = given()
-            .when()
-            .get(POSTS_API_URL)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-        List<Long> postIds = actualResponseBody.getData().stream()
-            .map(PostResponseData::getId)
-            .collect(Collectors.toList());
-
-        ResponseBody<List<PostResponseData>> expectedResponseBody = ResponseBody.<List<PostResponseData>>builder()
-            .meta(new Metadata(
-                Pagination
-                    .builder()
-                    .page(1).limit(20)
-                    .links(Links
-                        .builder()
-                        .current(String.format(BASE_URL + POSTS_PAGE_API_URL, 1))
-                        .next(String.format(BASE_URL + POSTS_PAGE_API_URL, 2))
-                        .build()
-                    )
-                    .build()
-            ))
-            .data(postIds.stream()
-                         .map(id -> {
-                             ResponseBody<PostResponseData> responseBody = given()
-                                 .pathParam("id", id)
-                                 .when()
-                                 .get(POST_BY_ID_API_URL)
-                                 .then()
-                                 .statusCode(200)
-                                 .extract()
-                                 .as(new TypeRef<>(){});
-                             return responseBody.getData();
-                         })
-                         .collect(Collectors.toList())
-            )
-            .build();
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getMeta().getPagination().getTotal())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getMeta().getPagination().getPages())
-                  .isNotNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> {
-                      Pagination pagination = r.getMeta().getPagination();
-                      return pagination.getTotal() <= pagination.getPages() * pagination.getLimit()
-                          && pagination.getTotal() > (pagination.getPages() - 1) * pagination.getLimit();
-                  })
-                  .isEqualTo(true);
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getMeta().getPagination().getLinks().getPrevious())
-                  .isNull();
-        });
+        ResponseBody<List<PostResponseData>> actualResponseBody = actionStep.getObjectsFirstPage(PostRequestData.class);
+        assertionStep.assertObjectsFirstPageResponse(PostRequestData.class, actualResponseBody);
     }
 
     @Test(dataProvider = "getPutPostObjectData")
     public void testPutPostObject(PostRequestData requestBody, ResponseBody<PostResponseData> expectedResponseBody) {
-        ResponseBody<PostResponseData> postResponseBody = given()
-            .body(PostRequestData.builder()
+        ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(
+            PostRequestData.builder()
                 .userId(userIds.get(0))
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
                 .build()
-            )
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        );
         Long id = postResponseBody.getData().getId();
         allCreatedPosts.add(id);
 
-        ResponseBody<PostResponseData> actualResponseBody = given()
-            .pathParam("id", id)
-            .body(requestBody)
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getId())
-                  .isNotNull();
-        });
+        ResponseBody<PostResponseData> actualResponseBody = actionStep.putObject(id, requestBody);
+        assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
     @Test(dataProvider = "getPostOrPutPostObjectNegativeData")
@@ -640,42 +392,18 @@ public class GoRestPostsTest extends BaseTest {
         PostRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<PostResponseData> postResponseBody = given()
-            .body(PostRequestData.builder()
+        ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(
+            PostRequestData.builder()
                 .userId(userIds.get(0))
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
                 .build()
-            )
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        );
         Long id = postResponseBody.getData().getId();
         allCreatedPosts.add(id);
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
-            .pathParam("id", id)
-            .body(requestBody)
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(422)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-        });
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrors(id, requestBody);
+        assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
     @Test(dataProvider = "getPutPostObjectMissingFieldsData")
@@ -684,305 +412,137 @@ public class GoRestPostsTest extends BaseTest {
         PostRequestData requestBody,
         ResponseBody<PostResponseData> expectedResponseBody
     ) {
-        ResponseBody<PostResponseData> postResponseBody = given()
-            .body(postRequestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(postRequestBody);
         Long id = postResponseBody.getData().getId();
         allCreatedPosts.add(id);
 
-        ResponseBody<PostResponseData> actualResponseBody = given()
-            .pathParam("id", id)
-            .body(requestBody, new Jackson2Mapper(
-                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
-            ))
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-            softly.assertThat(actualResponseBody)
-                  .extracting(r -> r.getData().getId())
-                  .isNotNull();
-        });
+        ResponseBody<PostResponseData> actualResponseBody = actionStep.putObjectWithoutNullValues(id, requestBody);
+        assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
     @Test
     public void testPutDeletedPostObject() {
-        PostRequestData requestBody = PostRequestData.builder()
-            .userId(userIds.get(0))
-            .title(faker.animal().name())
-            .body(faker.yoda().quote())
-            .build();
-
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+            PostRequestData.builder()
+                .userId(userIds.get(0))
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
+        );
         Long id = responseBody.getData().getId();
-        given()
-            .pathParam("id", id)
-            .when()
-            .delete(POST_BY_ID_API_URL);
+        actionStep.deleteObject(id, PostRequestData.class);
 
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
-            .pathParam("id", id)
-            .body(requestBody)
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .meta(null)
-            .data(new ErrorMessageResponseData("Resource not found"))
-            .build();
-
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = actionStep.putObjectWithError(
+            id,
+            PostRequestData.builder()
+                .userId(userIds.get(0))
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
+        );
+        assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testPutPostObjectToDeletedUser() {
-        ResponseBody<UserResponseData> postResponseBody = given()
-            .body(UserRequestData.builder()
+        ResponseBody<UserResponseData> postResponseBody = actionStep.postObject(
+            UserRequestData.builder()
                 .name(faker.name().fullName())
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
                 .build()
-            )
-            .when()
-            .post(USERS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        );
         Long userId = postResponseBody.getData().getId();
-        allCreatedUsers.add(userId);
 
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(PostRequestData.builder()
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+            PostRequestData.builder()
                 .userId(userIds.get(0))
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
                 .build()
-            )
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        );
         Long id = responseBody.getData().getId();
         allCreatedPosts.add(id);
 
-        given()
-            .pathParam("id", userId)
-            .when()
-            .delete(USER_BY_ID_API_URL);
+        actionStep.deleteObject(userId, UserRequestData.class);
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = given()
-            .pathParam("id", id)
-            .body(
-                PostRequestData.builder()
-                    .userId(userId)
-                    .build(),
-                new Jackson2Mapper(
-                    (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
-                )
-            )
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(422)
-            .extract()
-            .as(new TypeRef<>(){});
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrorsWithoutNullValues(
+            id,
+            PostRequestData.builder()
+                .userId(userId)
+                .build()
+        );
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
              .meta(null)
              .data(List.of(
                  new ErrorResponseData("user", "must exist")
              ))
              .build();
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actualResponseBody)
-                  .usingRecursiveComparison()
-                  .ignoringExpectedNullFields()
-                  .ignoringCollectionOrder()
-                  .isEqualTo(expectedResponseBody);
-            softly.assertThat(actualResponseBody)
-                  .extracting(ResponseBody::getMeta)
-                  .isNull();
-        });
+        assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
     @Test
     public void testPutPostObjectInvalidRequestBody() {
-        ResponseBody<PostResponseData> postResponseBody = given()
-            .body(PostRequestData.builder()
+        ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(
+            PostRequestData.builder()
                 .userId(userIds.get(0))
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
                 .build()
-            )
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
+        );
         Long id = postResponseBody.getData().getId();
         allCreatedPosts.add(id);
 
-        given()
-            .pathParam("id", id)
-            .body("{}'")
-            .when()
-            .put(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(500);
+        actionStep.putObjectInvalidRequestBody(id, PostRequestData.class);
     }
 
     @Test
     public void testPutPostObjectInvalidInput() {
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
-            .body("{}")
-            .when()
-            .put(POST_BY_ID_INVALID_INPUT_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        ResponseBody<ErrorMessageResponseData> expectedResponseBody = ResponseBody.<ErrorMessageResponseData>builder()
-            .meta(null)
-            .data(new ErrorMessageResponseData("Resource not found"))
-            .build();
-
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+        ResponseBody<ErrorMessageResponseData> actualResponseBody
+            = actionStep.putObjectWithInvalidInput(PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testDeletePostObject() {
-        PostRequestData requestBody = PostRequestData.builder()
-            .userId(userIds.get(0))
-            .title(faker.animal().name())
-            .body(faker.yoda().quote())
-            .build();
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        Long id = responseBody.getData().getId();
-        given()
-            .pathParam("id", id)
-            .when()
-            .delete(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(204);
-
-        ResponseBody<ErrorMessageResponseData> actualGetResponseBody = given()
-            .pathParam("id", id)
-            .when()
-            .get(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-        ResponseBody<ErrorMessageResponseData> expectedGetResponseBody
-            = ResponseBody.<ErrorMessageResponseData>builder()
-                          .meta(null)
-                          .data(new ErrorMessageResponseData("Resource not found"))
-                          .build();
-
-        SoftAssertions.assertSoftly(
-            softly -> softly.assertThat(actualGetResponseBody).isEqualTo(expectedGetResponseBody)
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+            PostRequestData.builder()
+                .userId(userIds.get(0))
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
         );
+        Long id = responseBody.getData().getId();
+        actionStep.deleteObject(id, PostRequestData.class);
+
+        ResponseBody<ErrorMessageResponseData> actualGetResponseBody
+            = actionStep.getObjectWithError(id, PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualGetResponseBody);
     }
 
     @Test
     public void testDeleteDeletedPostObject() {
-        PostRequestData requestBody = PostRequestData.builder()
-            .userId(userIds.get(0))
-            .title(faker.animal().name())
-            .body(faker.yoda().quote())
-            .build();
-        ResponseBody<PostResponseData> responseBody = given()
-            .body(requestBody)
-            .when()
-            .post(POSTS_API_URL)
-            .then()
-            .statusCode(201)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        Long id = responseBody.getData().getId();
-        given()
-            .pathParam("id", id)
-            .when()
-            .delete(POST_BY_ID_API_URL);
-
-        ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody = given()
-            .pathParam("id", id)
-            .when()
-            .delete(POST_BY_ID_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-        ResponseBody<ErrorMessageResponseData> expectedDeleteResponseBody
-            = ResponseBody.<ErrorMessageResponseData>builder()
-                          .meta(null)
-                          .data(new ErrorMessageResponseData("Resource not found"))
-                          .build();
-
-        SoftAssertions.assertSoftly(
-            softly -> softly.assertThat(actualDeleteResponseBody).isEqualTo(expectedDeleteResponseBody)
+        ResponseBody<PostResponseData> responseBody = actionStep.postObject(
+            PostRequestData.builder()
+                .userId(userIds.get(0))
+                .title(faker.animal().name())
+                .body(faker.yoda().quote())
+                .build()
         );
+        Long id = responseBody.getData().getId();
+        actionStep.deleteObject(id, PostRequestData.class);
+
+        ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody
+            = actionStep.deleteObjectWithError(id, PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualDeleteResponseBody);
     }
 
     @Test
     public void testDeletePostObjectInvalidInput() {
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = given()
-            .when()
-            .delete(POST_BY_ID_INVALID_INPUT_API_URL)
-            .then()
-            .statusCode(404)
-            .extract()
-            .as(new TypeRef<>(){});
-
-        ResponseBody<ErrorMessageResponseData> expectedResponseBody
-            = ResponseBody.<ErrorMessageResponseData>builder()
-                          .meta(null)
-                          .data(new ErrorMessageResponseData("Resource not found"))
-                          .build();
-
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(actualResponseBody).isEqualTo(expectedResponseBody));
+        ResponseBody<ErrorMessageResponseData> actualResponseBody
+            = actionStep.deleteObjectWithInvalidInput(PostRequestData.class);
+        assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
 }
