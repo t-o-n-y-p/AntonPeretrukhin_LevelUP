@@ -2,18 +2,12 @@ package ru.levelp.at.hw9.steps;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.common.mapper.TypeRef;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import org.assertj.core.api.SoftAssertions;
 import ru.levelp.at.hw9.RequestUriUtil;
-import ru.levelp.at.hw9.templates.request.data.UserRequestData;
 import ru.levelp.at.hw9.templates.response.Links;
 import ru.levelp.at.hw9.templates.response.Metadata;
 import ru.levelp.at.hw9.templates.response.Pagination;
@@ -21,7 +15,6 @@ import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.ErrorMessageResponseData;
 import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;
 import ru.levelp.at.hw9.templates.response.data.ObjectResponseData;
-import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 
 public class AssertionStep {
 

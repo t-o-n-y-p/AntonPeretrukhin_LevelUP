@@ -1,16 +1,9 @@
 package ru.levelp.at.hw9;
 
-import static io.restassured.RestAssured.given;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.common.mapper.TypeRef;
-import io.restassured.internal.mapping.Jackson2Mapper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.assertj.core.api.SoftAssertions;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -18,9 +11,6 @@ import ru.levelp.at.hw9.templates.Gender;
 import ru.levelp.at.hw9.templates.Status;
 import ru.levelp.at.hw9.templates.request.data.PostRequestData;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
-import ru.levelp.at.hw9.templates.response.Links;
-import ru.levelp.at.hw9.templates.response.Metadata;
-import ru.levelp.at.hw9.templates.response.Pagination;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.ErrorMessageResponseData;
 import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;

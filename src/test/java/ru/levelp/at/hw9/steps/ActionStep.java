@@ -3,16 +3,11 @@ package ru.levelp.at.hw9.steps;
 import static io.restassured.RestAssured.given;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.internal.mapping.Jackson2Mapper;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import lombok.SneakyThrows;
 import ru.levelp.at.hw9.RequestUriUtil;
-import ru.levelp.at.hw9.templates.response.Metadata;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.ErrorMessageResponseData;
 import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;

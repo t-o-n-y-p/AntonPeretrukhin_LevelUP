@@ -1,7 +1,5 @@
 package ru.levelp.at.hw9;
 
-import static io.restassured.RestAssured.given;
-
 import com.github.javafaker.Faker;
 import io.restassured.RestAssured;
 import io.restassured.authentication.PreemptiveOAuth2HeaderScheme;

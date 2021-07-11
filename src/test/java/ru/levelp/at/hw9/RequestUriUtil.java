@@ -1,6 +1,5 @@
 package ru.levelp.at.hw9;
 
-import java.awt.print.PageFormat;
 import java.util.Map;
 import ru.levelp.at.hw9.templates.request.data.CommentRequestData;
 import ru.levelp.at.hw9.templates.request.data.PostRequestData;
