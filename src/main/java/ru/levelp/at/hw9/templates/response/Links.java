@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
 @Builder
+@ToString
 public class Links {
 
     private String previous;

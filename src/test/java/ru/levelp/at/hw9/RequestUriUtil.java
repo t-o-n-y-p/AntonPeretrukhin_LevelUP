@@ -4,9 +4,6 @@ import java.util.Map;
 import ru.levelp.at.hw9.templates.request.data.CommentRequestData;
 import ru.levelp.at.hw9.templates.request.data.PostRequestData;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
-import ru.levelp.at.hw9.templates.response.data.CommentResponseData;
-import ru.levelp.at.hw9.templates.response.data.PostResponseData;
-import ru.levelp.at.hw9.templates.response.data.UserResponseData;
 
 public final class RequestUriUtil {
 
@@ -34,11 +31,6 @@ public final class RequestUriUtil {
         UserRequestData.class, "/public/v1/users/qwerty",
         PostRequestData.class, "/public/v1/posts/qwerty",
         CommentRequestData.class, "/public/v1/comments/qwerty"
-    );
-    public static Map<Class<?>, Class<?>> REQUEST_RESPONSE_MAP = Map.of(
-        UserRequestData.class, UserResponseData.class,
-        PostRequestData.class, PostResponseData.class,
-        CommentRequestData.class, CommentResponseData.class
     );
 
     public static <T> String getPageUri(int page, Class<T> requestDataClass) {

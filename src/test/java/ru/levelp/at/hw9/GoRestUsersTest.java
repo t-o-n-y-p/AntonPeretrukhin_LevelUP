@@ -1,6 +1,13 @@
 package ru.levelp.at.hw9;
 
+import static io.restassured.RestAssured.given;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.common.mapper.TypeRef;
+import io.restassured.internal.mapping.Jackson2Mapper;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -9,6 +16,9 @@ import org.testng.annotations.Test;
 import ru.levelp.at.hw9.templates.Gender;
 import ru.levelp.at.hw9.templates.Status;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
+import ru.levelp.at.hw9.templates.response.Links;
+import ru.levelp.at.hw9.templates.response.Metadata;
+import ru.levelp.at.hw9.templates.response.Pagination;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.ErrorMessageResponseData;
 import ru.levelp.at.hw9.templates.response.data.ErrorResponseData;
@@ -254,7 +264,8 @@ public class GoRestUsersTest extends BaseTest {
 
     @Test(dataProvider = "getPostUserObjectData")
     public void testPostUserObject(UserRequestData requestBody, ResponseBody<UserResponseData> expectedResponseBody) {
-        ResponseBody<UserResponseData> actualResponseBody = actionStep.postObject(requestBody);
+        ResponseBody<UserResponseData> actualResponseBody
+            = actionStep.postObject(requestBody, 201).as(new TypeRef<>(){});
         allCreatedUsers.add(actualResponseBody.getData().getId());
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
@@ -264,7 +275,8 @@ public class GoRestUsersTest extends BaseTest {
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody
+            = actionStep.postObject(requestBody, 422).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -277,18 +289,20 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(email)
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         allCreatedUsers.add(responseBody.getData().getId());
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObject(
             UserRequestData.builder()
                 .name(faker.name().fullName())
                 .gender(Gender.MALE)
                 .email(email)
                 .status(Status.INACTIVE)
-                .build()
-        );
+                .build(),
+            422
+        ).as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
             .meta(null)
             .data(List.of(
@@ -303,8 +317,12 @@ public class GoRestUsersTest extends BaseTest {
         UserRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody
-            = actionStep.postObjectWithErrorsWithoutNullValues(requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObject(
+            requestBody, 422,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -315,14 +333,16 @@ public class GoRestUsersTest extends BaseTest {
 
     @Test(dataProvider = "getGetUserObjectData")
     public void testGetUserObject(UserRequestData requestBody) {
-        ResponseBody<UserResponseData> responseBody = actionStep.postObject(requestBody);
+        ResponseBody<UserResponseData> responseBody
+            = actionStep.postObject(requestBody, 201).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
         ResponseBody<UserResponseData> expectedResponseBody = ResponseBody.<UserResponseData>builder()
             .meta(responseBody.getMeta())
             .data(responseBody.getData())
             .build();
-        ResponseBody<UserResponseData> actualResponseBody = actionStep.getObject(id, UserRequestData.class);
+        ResponseBody<UserResponseData> actualResponseBody
+            = actionStep.getObject(id, UserRequestData.class, 200).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -334,19 +354,20 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, UserRequestData.class);
+        actionStep.deleteObject(id, UserRequestData.class, 204);
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.getObjectWithError(id, UserRequestData.class);
+            = actionStep.getObject(id, UserRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testGetUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.getObjectWithInvalidInput(UserRequestData.class);
+            = actionStep.getObjectWithInvalidInput(UserRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -359,14 +380,67 @@ public class GoRestUsersTest extends BaseTest {
                     .gender(Gender.FEMALE)
                     .email(faker.internet().emailAddress())
                     .status(Status.ACTIVE)
-                    .build()
-            );
+                    .build(),
+                201
+            ).as(new TypeRef<>(){});
             Long id = responseBody.getData().getId();
             allCreatedUsers.add(id);
         }
 
-        ResponseBody<List<UserResponseData>> actualResponseBody = actionStep.getObjectsFirstPage(UserRequestData.class);
-        assertionStep.assertObjectsFirstPageResponse(UserRequestData.class, actualResponseBody);
+        ResponseBody<List<UserResponseData>> actualResponseBody
+            = actionStep.getObjectsFirstPage(UserRequestData.class).as(new TypeRef<>(){});
+        ResponseBody<List<UserResponseData>> expectedResponseBody;
+        if (actualResponseBody.getData() == null || actualResponseBody.getData().isEmpty()) {
+            expectedResponseBody = ResponseBody.<List<UserResponseData>>builder()
+                .meta(new Metadata(
+                    Pagination
+                        .builder()
+                        .page(1).limit(20)
+                        .links(Links
+                            .builder()
+                            .current(RequestUriUtil.getPageUri(1, UserRequestData.class))
+                            .build()
+                        )
+                        .build()
+                ))
+                .data(Collections.emptyList())
+                .build();
+        } else {
+            List<Long> userIds = actualResponseBody.getData().stream()
+                .map(UserResponseData::getId)
+                .collect(Collectors.toList());
+
+            expectedResponseBody = ResponseBody.<List<UserResponseData>>builder()
+                .meta(new Metadata(
+                    Pagination
+                        .builder()
+                        .page(1).limit(20)
+                        .links(Links
+                            .builder()
+                            .current(RequestUriUtil.getPageUri(1, UserRequestData.class))
+                            .build()
+                        )
+                        .build()
+                ))
+                .data(userIds.stream()
+                    .map(id -> {
+                        ResponseBody<UserResponseData> responseBody = given()
+                            .pathParam("id", id)
+                            .when()
+                            .get(RequestUriUtil.OBJECT_BY_ID_API_URL.get(UserRequestData.class))
+                            .then()
+                            .statusCode(200)
+                            .extract()
+                            .as(new TypeRef<>(){});
+                        return responseBody.getData();
+                    })
+                    .collect(Collectors.toList())
+                )
+                .build();
+        }
+        assertionStep.assertObjectsFirstPageResponse(
+            actualResponseBody, expectedResponseBody, RequestUriUtil.getPageUri(2, UserRequestData.class)
+        );
     }
 
     @Test(dataProvider = "getPutUserObjectData")
@@ -377,12 +451,14 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.MALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.INACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
 
-        ResponseBody<UserResponseData> actualResponseBody = actionStep.putObject(id, requestBody);
+        ResponseBody<UserResponseData> actualResponseBody
+            = actionStep.putObject(id, requestBody, 200).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -397,11 +473,13 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.MALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.INACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrors(id, requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody
+            = actionStep.putObject(id, requestBody, 422).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -411,11 +489,17 @@ public class GoRestUsersTest extends BaseTest {
         UserRequestData requestBody,
         ResponseBody<UserResponseData> expectedResponseBody
     ) {
-        ResponseBody<UserResponseData> responseBody = actionStep.postObject(postRequestBody);
+        ResponseBody<UserResponseData> responseBody
+            = actionStep.postObject(postRequestBody, 201).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
 
-        ResponseBody<UserResponseData> actualResponseBody = actionStep.putObjectWithoutNullValues(id, requestBody);
+        ResponseBody<UserResponseData> actualResponseBody = actionStep.putObject(
+            id, requestBody, 200,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -427,20 +511,22 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, UserRequestData.class);
+        actionStep.deleteObject(id, UserRequestData.class, 204);
 
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = actionStep.putObjectWithError(
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = actionStep.putObject(
             id,
             UserRequestData.builder()
                 .name(faker.name().fullName())
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            404
+        ).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -459,20 +545,25 @@ public class GoRestUsersTest extends BaseTest {
                         .gender((Gender) e[1])
                         .email((String) e[2])
                         .status((Status) e[3])
-                        .build()
-                );
+                        .build(),
+                    201
+                ).as(new TypeRef<>(){});
                 Long id = responseBody.getData().getId();
                 allCreatedUsers.add(id);
                 return responseBody.getData();
             })
             .collect(Collectors.toList());
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrorsWithoutNullValues(
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObject(
             responseBodies.get(1).getId(),
             UserRequestData.builder()
                 .email(responseBodies.get(0).getEmail())
-                .build()
-        );
+                .build(),
+            422,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
             .meta(null)
             .data(List.of(
@@ -490,8 +581,9 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedUsers.add(id);
         actionStep.putObjectInvalidRequestBody(id, UserRequestData.class);
@@ -500,7 +592,7 @@ public class GoRestUsersTest extends BaseTest {
     @Test
     public void testPutUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.putObjectWithInvalidInput(UserRequestData.class);
+            = actionStep.putObjectWithInvalidInput(UserRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -512,13 +604,14 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, UserRequestData.class);
+        actionStep.deleteObject(id, UserRequestData.class, 204);
 
         ResponseBody<ErrorMessageResponseData> actualGetResponseBody
-            = actionStep.getObjectWithError(id, UserRequestData.class);
+            = actionStep.getObject(id, UserRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualGetResponseBody);
     }
 
@@ -530,20 +623,21 @@ public class GoRestUsersTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, UserRequestData.class);
+        actionStep.deleteObject(id, UserRequestData.class, 204);
 
         ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody
-            = actionStep.deleteObjectWithError(id, UserRequestData.class);
+            = actionStep.deleteObject(id, UserRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualDeleteResponseBody);
     }
 
     @Test
     public void testDeleteUserObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.deleteObjectWithInvalidInput(UserRequestData.class);
+            = actionStep.deleteObjectWithInvalidInput(UserRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 

@@ -1,6 +1,13 @@
 package ru.levelp.at.hw9;
 
+import static io.restassured.RestAssured.given;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.common.mapper.TypeRef;
+import io.restassured.internal.mapping.Jackson2Mapper;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -12,6 +19,9 @@ import ru.levelp.at.hw9.templates.Status;
 import ru.levelp.at.hw9.templates.request.data.CommentRequestData;
 import ru.levelp.at.hw9.templates.request.data.PostRequestData;
 import ru.levelp.at.hw9.templates.request.data.UserRequestData;
+import ru.levelp.at.hw9.templates.response.Links;
+import ru.levelp.at.hw9.templates.response.Metadata;
+import ru.levelp.at.hw9.templates.response.Pagination;
 import ru.levelp.at.hw9.templates.response.ResponseBody;
 import ru.levelp.at.hw9.templates.response.data.CommentResponseData;
 import ru.levelp.at.hw9.templates.response.data.ErrorMessageResponseData;
@@ -38,8 +48,9 @@ public class GoRestCommentsTest extends BaseTest {
                         .gender((Gender) e[1])
                         .email((String) e[2])
                         .status((Status) e[3])
-                        .build()
-                );
+                        .build(),
+                    201
+                ).as(new TypeRef<>(){});
                 Long id = responseBody.getData().getId();
                 allCreatedUsers.add(id);
                 return id;
@@ -52,8 +63,9 @@ public class GoRestCommentsTest extends BaseTest {
                         .userId(userId)
                         .title(faker.animal().name())
                         .body(faker.yoda().quote())
-                        .build()
-                );
+                        .build(),
+                    201
+                ).as(new TypeRef<>(){});;
                 Long id = responseBody.getData().getId();
                 allCreatedPosts.add(id);
                 return id;
@@ -298,7 +310,8 @@ public class GoRestCommentsTest extends BaseTest {
     public void testPostCommentObject(
         CommentRequestData requestBody, ResponseBody<CommentResponseData> expectedResponseBody
     ) {
-        ResponseBody<CommentResponseData> actualResponseBody = actionStep.postObject(requestBody);
+        ResponseBody<CommentResponseData> actualResponseBody
+            = actionStep.postObject(requestBody, 201).as(new TypeRef<>(){});
         allCreatedComments.add(actualResponseBody.getData().getId());
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
@@ -308,7 +321,8 @@ public class GoRestCommentsTest extends BaseTest {
         CommentRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody
+            = actionStep.postObject(requestBody, 422).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -320,29 +334,32 @@ public class GoRestCommentsTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long userId = userResponseBody.getData().getId();
         ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(
             PostRequestData.builder()
                 .userId(userId)
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long postId = postResponseBody.getData().getId();
 
-        actionStep.deleteObject(postId, PostRequestData.class);
-        actionStep.deleteObject(userId, UserRequestData.class);
+        actionStep.deleteObject(postId, PostRequestData.class, 204);
+        actionStep.deleteObject(userId, UserRequestData.class, 204);
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObjectWithErrors(
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObject(
             CommentRequestData.builder()
                 .postId(postId)
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            422
+        ).as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
             .meta(null)
             .data(List.of(
@@ -357,8 +374,12 @@ public class GoRestCommentsTest extends BaseTest {
         CommentRequestData requestBody,
         ResponseBody<List<ErrorResponseData>> expectedResponseBody
     ) {
-        ResponseBody<List<ErrorResponseData>> actualResponseBody
-            = actionStep.postObjectWithErrorsWithoutNullValues(requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.postObject(
+            requestBody, 422,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -369,14 +390,16 @@ public class GoRestCommentsTest extends BaseTest {
 
     @Test(dataProvider = "getGetCommentObjectData")
     public void testGetCommentObject(CommentRequestData requestBody) {
-        ResponseBody<CommentResponseData> responseBody = actionStep.postObject(requestBody);
+        ResponseBody<CommentResponseData> responseBody
+            = actionStep.postObject(requestBody, 201).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedComments.add(id);
         ResponseBody<CommentResponseData> expectedResponseBody = ResponseBody.<CommentResponseData>builder()
             .meta(responseBody.getMeta())
             .data(responseBody.getData())
             .build();
-        ResponseBody<CommentResponseData> actualResponseBody = actionStep.getObject(id, CommentRequestData.class);
+        ResponseBody<CommentResponseData> actualResponseBody
+            = actionStep.getObject(id, CommentRequestData.class, 200).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -388,20 +411,21 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, CommentRequestData.class);
+        actionStep.deleteObject(id, CommentRequestData.class, 204);
 
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.getObjectWithError(id, CommentRequestData.class);
+            = actionStep.getObject(id, CommentRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
     @Test
     public void testGetCommentObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.getObjectWithInvalidInput(CommentRequestData.class);
+            = actionStep.getObjectWithInvalidInput(CommentRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -414,14 +438,66 @@ public class GoRestCommentsTest extends BaseTest {
                     .name(faker.name().fullName())
                     .email(faker.internet().emailAddress())
                     .body(faker.yoda().quote())
-                    .build()
-            );
+                    .build(),
+                201
+            ).as(new TypeRef<>(){});
             allCreatedComments.add(responseBody.getData().getId());
         }
 
         ResponseBody<List<CommentResponseData>> actualResponseBody
-            = actionStep.getObjectsFirstPage(CommentRequestData.class);
-        assertionStep.assertObjectsFirstPageResponse(CommentRequestData.class, actualResponseBody);
+            = actionStep.getObjectsFirstPage(CommentRequestData.class).as(new TypeRef<>(){});
+        ResponseBody<List<CommentResponseData>> expectedResponseBody;
+        if (actualResponseBody.getData() == null || actualResponseBody.getData().isEmpty()) {
+            expectedResponseBody = ResponseBody.<List<CommentResponseData>>builder()
+                .meta(new Metadata(
+                    Pagination
+                        .builder()
+                        .page(1).limit(20)
+                        .links(Links
+                            .builder()
+                            .current(RequestUriUtil.getPageUri(1, CommentRequestData.class))
+                            .build()
+                        )
+                        .build()
+                ))
+                .data(Collections.emptyList())
+                .build();
+        } else {
+            List<Long> userIds = actualResponseBody.getData().stream()
+                .map(CommentResponseData::getId)
+                .collect(Collectors.toList());
+
+            expectedResponseBody = ResponseBody.<List<CommentResponseData>>builder()
+                .meta(new Metadata(
+                    Pagination
+                        .builder()
+                        .page(1).limit(20)
+                        .links(Links
+                            .builder()
+                            .current(RequestUriUtil.getPageUri(1, CommentRequestData.class))
+                            .build()
+                        )
+                        .build()
+                ))
+                .data(userIds.stream()
+                    .map(id -> {
+                        ResponseBody<CommentResponseData> responseBody = given()
+                            .pathParam("id", id)
+                            .when()
+                            .get(RequestUriUtil.OBJECT_BY_ID_API_URL.get(CommentRequestData.class))
+                            .then()
+                            .statusCode(200)
+                            .extract()
+                            .as(new TypeRef<>(){});
+                        return responseBody.getData();
+                    })
+                    .collect(Collectors.toList())
+                )
+                .build();
+        }
+        assertionStep.assertObjectsFirstPageResponse(
+            actualResponseBody, expectedResponseBody, RequestUriUtil.getPageUri(2, CommentRequestData.class)
+        );
     }
 
     @Test(dataProvider = "getPutCommentObjectData")
@@ -434,12 +510,14 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
         allCreatedComments.add(id);
 
-        ResponseBody<CommentResponseData> actualResponseBody = actionStep.putObject(id, requestBody);
+        ResponseBody<CommentResponseData> actualResponseBody
+            = actionStep.putObject(id, requestBody, 200).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -454,12 +532,14 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
         allCreatedComments.add(id);
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrors(id, requestBody);
+        ResponseBody<List<ErrorResponseData>> actualResponseBody
+            = actionStep.putObject(id, requestBody, 422).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBodyWithErrors(actualResponseBody, expectedResponseBody);
     }
 
@@ -469,11 +549,17 @@ public class GoRestCommentsTest extends BaseTest {
         CommentRequestData requestBody,
         ResponseBody<CommentResponseData> expectedResponseBody
     ) {
-        ResponseBody<CommentResponseData> postResponseBody = actionStep.postObject(postRequestBody);
+        ResponseBody<CommentResponseData> postResponseBody
+            = actionStep.postObject(postRequestBody, 201).as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
         allCreatedComments.add(id);
 
-        ResponseBody<CommentResponseData> actualResponseBody = actionStep.putObjectWithoutNullValues(id, requestBody);
+        ResponseBody<CommentResponseData> actualResponseBody = actionStep.putObject(
+            id, requestBody, 200,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         assertionStep.assertObjectResponseBody(actualResponseBody, expectedResponseBody);
     }
 
@@ -485,20 +571,22 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
-        actionStep.deleteObject(id, CommentRequestData.class);
+        actionStep.deleteObject(id, CommentRequestData.class, 204);
 
-        ResponseBody<ErrorMessageResponseData> actualResponseBody = actionStep.putObjectWithError(
+        ResponseBody<ErrorMessageResponseData> actualResponseBody = actionStep.putObject(
             id,
             CommentRequestData.builder()
                 .postId(postIds.get(0))
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            404
+        ).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -510,16 +598,18 @@ public class GoRestCommentsTest extends BaseTest {
                 .gender(Gender.FEMALE)
                 .email(faker.internet().emailAddress())
                 .status(Status.ACTIVE)
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long userId = userResponseBody.getData().getId();
         ResponseBody<PostResponseData> postResponseBody = actionStep.postObject(
             PostRequestData.builder()
                 .userId(userId)
                 .title(faker.animal().name())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long postId = postResponseBody.getData().getId();
 
         ResponseBody<CommentResponseData> responseBody = actionStep.postObject(
@@ -528,20 +618,25 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
         allCreatedComments.add(id);
 
-        actionStep.deleteObject(postId, PostRequestData.class);
-        actionStep.deleteObject(userId, UserRequestData.class);
+        actionStep.deleteObject(postId, PostRequestData.class, 204);
+        actionStep.deleteObject(userId, UserRequestData.class, 204);
 
-        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObjectWithErrorsWithoutNullValues(
+        ResponseBody<List<ErrorResponseData>> actualResponseBody = actionStep.putObject(
             id,
             CommentRequestData.builder()
                 .postId(postId)
-                .build()
-        );
+                .build(),
+            422,
+            new Jackson2Mapper(
+                (type, s) -> new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+            )
+        ).as(new TypeRef<>(){});
         ResponseBody<List<ErrorResponseData>> expectedResponseBody = ResponseBody.<List<ErrorResponseData>>builder()
             .meta(null)
             .data(List.of(
@@ -559,8 +654,9 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = postResponseBody.getData().getId();
         allCreatedComments.add(id);
 
@@ -570,7 +666,7 @@ public class GoRestCommentsTest extends BaseTest {
     @Test
     public void testPutCommentObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.putObjectWithInvalidInput(CommentRequestData.class);
+            = actionStep.putObjectWithInvalidInput(CommentRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 
@@ -582,13 +678,14 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, CommentRequestData.class);
+        actionStep.deleteObject(id, CommentRequestData.class, 204);
 
         ResponseBody<ErrorMessageResponseData> actualGetResponseBody
-            = actionStep.getObjectWithError(id, CommentRequestData.class);
+            = actionStep.getObject(id, CommentRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualGetResponseBody);
     }
 
@@ -600,20 +697,21 @@ public class GoRestCommentsTest extends BaseTest {
                 .name(faker.name().fullName())
                 .email(faker.internet().emailAddress())
                 .body(faker.yoda().quote())
-                .build()
-        );
+                .build(),
+            201
+        ).as(new TypeRef<>(){});
         Long id = responseBody.getData().getId();
-        actionStep.deleteObject(id, CommentRequestData.class);
+        actionStep.deleteObject(id, CommentRequestData.class, 204);
 
         ResponseBody<ErrorMessageResponseData> actualDeleteResponseBody
-            = actionStep.deleteObjectWithError(id, CommentRequestData.class);
+            = actionStep.deleteObject(id, CommentRequestData.class, 404).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualDeleteResponseBody);
     }
 
     @Test
     public void testDeleteCommentObjectInvalidInput() {
         ResponseBody<ErrorMessageResponseData> actualResponseBody
-            = actionStep.deleteObjectWithInvalidInput(CommentRequestData.class);
+            = actionStep.deleteObjectWithInvalidInput(CommentRequestData.class).as(new TypeRef<>(){});
         assertionStep.assertResourceNotFoundError(actualResponseBody);
     }
 

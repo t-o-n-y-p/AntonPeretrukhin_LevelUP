@@ -47,15 +47,15 @@ public abstract class BaseTest {
     @AfterClass
     public void tearDown() {
         for (Long id : allCreatedComments) {
-            actionStep.deleteObject(id, CommentRequestData.class);
+            actionStep.deleteObject(id, CommentRequestData.class, 204);
         }
         allCreatedComments.clear();
         for (Long id : allCreatedPosts) {
-            actionStep.deleteObject(id, PostRequestData.class);
+            actionStep.deleteObject(id, PostRequestData.class, 204);
         }
         allCreatedPosts.clear();
         for (Long id : allCreatedUsers) {
-            actionStep.deleteObject(id, UserRequestData.class);
+            actionStep.deleteObject(id, UserRequestData.class, 204);
         }
         allCreatedUsers.clear();
     }
