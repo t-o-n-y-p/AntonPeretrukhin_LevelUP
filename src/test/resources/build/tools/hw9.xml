@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="HW9">
+
+  <test name="Gorest tests">
+    <packages>
+      <package name="ru.levelp.at.hw9"/>
+    </packages>
+  </test>
+
+</suite>

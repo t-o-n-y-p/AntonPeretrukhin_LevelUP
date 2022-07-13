@@ -21,6 +21,8 @@
         <webdrivermanager.version>4.4.3</webdrivermanager.version>
         <slf4j-api.version>1.7.30</slf4j-api.version>
         <javafaker.version>1.0.2</javafaker.version>
+        <rest-assured.version>4.4.0</rest-assured.version>
+        <jackson-databind.version>2.12.3</jackson-databind.version>
         <allure.version>2.14.0</allure.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -78,6 +80,16 @@
             <version>${javafaker.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-testng</artifactId>
             <version>${allure.version}</version>
@@ -110,6 +122,12 @@
             <id>hw7</id>
             <properties>
                 <test-suite.name>hw7.xml</test-suite.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>hw9</id>
+            <properties>
+                <test-suite.name>hw9.xml</test-suite.name>
             </properties>
         </profile>
         <profile>
