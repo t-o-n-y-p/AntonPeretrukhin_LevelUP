@@ -1,1 +1,1 @@
-# AntonPeretrukhin_LevelUP
+# autotest practice project
